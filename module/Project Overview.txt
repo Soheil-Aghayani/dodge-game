@@ -1,0 +1,54 @@
+🎮 Project Overview: Dodge the Falling Blocks
+📝 Project Name:
+Dodge the Falling Blocks
+
+📚 Technologies Used:
+Language: Python 3.x
+
+GUI Library: PyQt5 (or QtPy5 as a wrapper)
+
+Optional Add-ons: QTimer (for motion), QPainter (for rendering), QtMultimedia (for sounds)
+
+🎯 Objective:
+Create a simple reflex-based game where the player must avoid falling blocks by moving left and right. The game becomes harder as time progresses.
+
+🧩 Main Components:
+
+Component	Description
+Main Window	Game screen where all elements are drawn and updated
+Player Object	A rectangle or image at the bottom that moves left/right with keyboard
+Block Objects	Randomly generated blocks that fall from the top of the screen
+Game Loop	Uses a timer to update block positions and check for collisions
+Score System	Optional: Tracks how long the player survives or how many blocks dodged
+Game Over	Stops the game loop and shows a "Game Over" message
+📏 Game Flow:
+Start game → player appears at the bottom.
+
+Blocks fall from top at intervals.
+
+Player moves using keyboard to dodge.
+
+If a block hits the player → show Game Over.
+
+(Optional) Restart or show score.
+
+🔄 Project Structure (Suggested):
+bash
+Copy
+Edit
+/dodge_game
+│
+├── main.py              # Main application logic
+├── player.py            # Player logic (position, movement)
+├── block.py             # Block logic (spawn, fall, collision)
+├── assets/              # Images and sounds (optional)
+└── README.md            # Instructions & project description
+📌 Timeline Estimate (if beginner):
+
+Task	Time Estimate
+Set up PyQt5 app window	30 min
+Draw player and blocks	1 hour
+Handle movement and falling logic	1–2 hours
+Add collision detection	30 min
+Add scoring or UI elements	1 hour
+Polish & testing	1–2 hours
