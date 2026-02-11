@@ -21,5 +21,5 @@ A fast-paced 2D survival game built with **Python** and **PyQt5**. This project 
    python main.py
 
 ## 🧠 Technical Highlights
-* **Rendering**: Uses ```QPainter`` for smooth 2D graphics and glitch effects.
+* **Rendering**: Uses ```QPainter``` for smooth 2D graphics and glitch effects.
 * **State Management**: Utilizes ```QStackedWidget``` for seamless transitions between menus and gameplay.
