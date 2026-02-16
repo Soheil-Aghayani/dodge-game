@@ -69,21 +69,34 @@ class SoundManager:
 
     def load_settings(self):
         """Load sound settings from file"""
+        # Set default values
+        self.sound_enabled = True
+        self.music_volume = 40
+        self.effects_volume = 70
+
         try:
             if os.path.exists(self.settings_file):
                 with open(self.settings_file, 'r') as f:
                     settings = json.load(f)
-                    self.sound_enabled = settings.get('sound_enabled', True)
-                    self.music_volume = settings.get('music_volume', 40)
-                    self.effects_volume = settings.get('effects_volume', 70)
-            else:
-                self.sound_enabled = True
-                self.music_volume = 40
-                self.effects_volume = 70
+
+                    if isinstance(settings, dict):
+                        sound_enabled = settings.get('sound_enabled')
+                        if isinstance(sound_enabled, bool):
+                            self.sound_enabled = sound_enabled
+
+                        music_volume = settings.get('music_volume')
+                        if isinstance(music_volume, (int, float)) and 0 <= music_volume <= 100:
+                            self.music_volume = int(music_volume)
+
+                        effects_volume = settings.get('effects_volume')
+                        if isinstance(effects_volume, (int, float)) and 0 <= effects_volume <= 100:
+                            self.effects_volume = int(effects_volume)
+        except (json.JSONDecodeError, IOError, TypeError):
+            # Fallback to defaults already set
+            pass
         except Exception:
-            self.sound_enabled = True
-            self.music_volume = 40
-            self.effects_volume = 70
+            # Catch-all to ensure game doesn't crash on startup due to settings
+            pass
 
     def save_settings(self):
         """Save sound settings to file"""
