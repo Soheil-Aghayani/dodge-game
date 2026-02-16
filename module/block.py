@@ -2,7 +2,7 @@ import random
 import os
 import math
 from PyQt5.QtCore import QRect, QTime, Qt
-from PyQt5.QtGui import QPixmap, QTransform
+from PyQt5.QtGui import QPixmap, QPainter
 from module.explosion import ExplosionAnimation
 
 class Block:
@@ -161,14 +161,27 @@ class Block:
             new_h = int(img_h * scale)
             x = self.x + (block_w - new_w) // 2
             y = self.y + (block_h - new_h) // 2
-            pixmap = self.image
             if self.should_rotate:
-                transform = QTransform()
-                transform.translate(x + new_w / 2, y + new_h / 2)
-                transform.rotate(self.angle)
-                transform.translate(-new_w / 2, -new_h / 2)
-                pixmap = pixmap.transformed(transform, mode=1)
-            painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), pixmap)
+                painter.save()
+                # Use SmoothPixmapTransform for better quality rotation
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+
+                # Move coordinate system to center of the block
+                center_x = x + new_w / 2
+                center_y = y + new_h / 2
+                painter.translate(center_x, center_y)
+
+                # Rotate
+                painter.rotate(self.angle)
+
+                # Move back to top-left relative to center
+                painter.translate(-new_w / 2, -new_h / 2)
+
+                # Draw the image
+                painter.drawPixmap(0, 0, int(new_w), int(new_h), self.image)
+                painter.restore()
+            else:
+                painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
         else:
             from PyQt5.QtGui import QColor
             painter.setBrush(QColor(255, 0, 0))
