@@ -128,6 +128,7 @@ class GameWidget(QWidget):
         
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        self.background.resize(self.width(), self.height())
         self.player.reset_position()
         
     def stop_game(self):
