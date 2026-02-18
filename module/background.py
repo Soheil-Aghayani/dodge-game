@@ -1,4 +1,5 @@
 from PyQt5.QtGui import QPainter, QPixmap
+from PyQt5.QtCore import Qt
 import os
 
 class Background:
@@ -25,26 +26,33 @@ class Background:
         self.original_width = self.background_image.width()
         self.original_height = self.background_image.height()
         
-    def draw(self, painter):
+        # Cached scaled background
+        self.scaled_background = None
+        self.scaled_x = 0
+        self.scaled_y = 0
+
+    def resize(self, window_width, window_height):
         if self.background_image.isNull():
             return
             
-        # Calculate scaling factors
-        window_width = self.game_widget.width()
-        window_height = self.game_widget.height()
-        
-        # Calculate scale to fit while maintaining aspect ratio
-        scale_width = window_width / self.original_width
-        scale_height = window_height / self.original_height
-        scale = max(scale_width, scale_height)  # Use the larger scale to ensure full coverage
-        
-        # Calculate new dimensions
-        new_width = int(self.original_width * scale)
-        new_height = int(self.original_height * scale)
+        # Scale the image to cover the window while preserving aspect ratio
+        self.scaled_background = self.background_image.scaled(
+            window_width, window_height,
+            Qt.KeepAspectRatioByExpanding,
+            Qt.SmoothTransformation
+        )
         
         # Calculate position to center the image
-        x = (window_width - new_width) // 2
-        y = (window_height - new_height) // 2
+        self.scaled_x = (window_width - self.scaled_background.width()) // 2
+        self.scaled_y = (window_height - self.scaled_background.height()) // 2
         
-        # Draw the scaled background image
-        painter.drawPixmap(x, y, new_width, new_height, self.background_image) 
+    def draw(self, painter):
+        if self.background_image.isNull():
+            return
+
+        # If scaled background hasn't been created yet, create it now
+        if self.scaled_background is None:
+            self.resize(self.game_widget.width(), self.game_widget.height())
+
+        # Draw the cached scaled background image
+        painter.drawPixmap(self.scaled_x, self.scaled_y, self.scaled_background)
