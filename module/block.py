@@ -7,6 +7,7 @@ from module.explosion import ExplosionAnimation
 
 class Block:
     obstacle_images = {}
+    scaled_obstacle_images = {}
     
     def __init__(self, game_widget):
         self.game_widget = game_widget
@@ -36,6 +37,13 @@ class Block:
                 "barrel": QPixmap(os.path.join(image_path, "barrel.png")),
                 "metalbox": QPixmap(os.path.join(image_path, "metalbox.png")),
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
+            }
+
+            # Create pre-scaled versions for static blocks
+            # These blocks are always 40x40 and don't pulse, so we can cache the scaled image
+            Block.scaled_obstacle_images = {
+                "metalbox": Block.obstacle_images["metalbox"].scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation),
+                "woodenbox": Block.obstacle_images["woodenbox"].scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             }
         
         # Randomly select an image with weights
@@ -149,39 +157,47 @@ class Block:
             return
             
         if self.image:
-            img_w = self.image.width()
-            img_h = self.image.height()
-            block_w = self.width
-            block_h = self.height
-            scale_pulse = 1.0
-            if self.should_pulse:
-                scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
-            scale = min(block_w / img_w, block_h / img_h) * scale_pulse
-            new_w = int(img_w * scale)
-            new_h = int(img_h * scale)
-            x = self.x + (block_w - new_w) // 2
-            y = self.y + (block_h - new_h) // 2
-            if self.should_rotate:
-                painter.save()
-                # Use SmoothPixmapTransform for better quality rotation
-                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            # Check for cached scaled image first (optimization for static blocks)
+            cached_img = Block.scaled_obstacle_images.get(self.image_type)
 
-                # Move coordinate system to center of the block
-                center_x = x + new_w / 2
-                center_y = y + new_h / 2
-                painter.translate(center_x, center_y)
-
-                # Rotate
-                painter.rotate(self.angle)
-
-                # Move back to top-left relative to center
-                painter.translate(-new_w / 2, -new_h / 2)
-
-                # Draw the image
-                painter.drawPixmap(0, 0, int(new_w), int(new_h), self.image)
-                painter.restore()
+            if cached_img and not self.should_pulse and not self.should_rotate and self.width == 40 and self.height == 40:
+                # Use cached pre-scaled image
+                # We know cached images are 40x40, so no offset needed
+                painter.drawPixmap(int(self.x), int(self.y), cached_img)
             else:
-                painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
+                img_w = self.image.width()
+                img_h = self.image.height()
+                block_w = self.width
+                block_h = self.height
+                scale_pulse = 1.0
+                if self.should_pulse:
+                    scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
+                scale = min(block_w / img_w, block_h / img_h) * scale_pulse
+                new_w = int(img_w * scale)
+                new_h = int(img_h * scale)
+                x = self.x + (block_w - new_w) // 2
+                y = self.y + (block_h - new_h) // 2
+                if self.should_rotate:
+                    painter.save()
+                    # Use SmoothPixmapTransform for better quality rotation
+                    painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+
+                    # Move coordinate system to center of the block
+                    center_x = x + new_w / 2
+                    center_y = y + new_h / 2
+                    painter.translate(center_x, center_y)
+
+                    # Rotate
+                    painter.rotate(self.angle)
+
+                    # Move back to top-left relative to center
+                    painter.translate(-new_w / 2, -new_h / 2)
+
+                    # Draw the image
+                    painter.drawPixmap(0, 0, int(new_w), int(new_h), self.image)
+                    painter.restore()
+                else:
+                    painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
         else:
             from PyQt5.QtGui import QColor
             painter.setBrush(QColor(255, 0, 0))
