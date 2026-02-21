@@ -7,6 +7,7 @@ from module.explosion import ExplosionAnimation
 
 class Block:
     obstacle_images = {}
+    scaled_obstacle_images = {}
     
     def __init__(self, game_widget):
         self.game_widget = game_widget
@@ -37,6 +38,20 @@ class Block:
                 "metalbox": QPixmap(os.path.join(image_path, "metalbox.png")),
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
+
+            # Pre-calculate scaled images for static blocks
+            target_w, target_h = 40, 40
+            for name in ["metalbox", "woodenbox"]:
+                img = Block.obstacle_images[name]
+                if not img.isNull():
+                    scale = min(target_w / img.width(), target_h / img.height())
+                    new_w = int(img.width() * scale)
+                    new_h = int(img.height() * scale)
+                    Block.scaled_obstacle_images[name] = img.scaled(
+                        new_w, new_h,
+                        Qt.KeepAspectRatio,
+                        Qt.SmoothTransformation
+                    )
         
         # Randomly select an image with weights
         weights = {
@@ -146,6 +161,15 @@ class Block:
             return
             
         if self.is_exploding:
+            return
+
+        # Optimization: Use pre-scaled image for static blocks to avoid scaling every frame
+        if self.image_type in Block.scaled_obstacle_images and not self.should_rotate and not self.should_pulse:
+            cached_img = Block.scaled_obstacle_images[self.image_type]
+            # Center the image within the block's bounds
+            x = self.x + (self.width - cached_img.width()) // 2
+            y = self.y + (self.height - cached_img.height()) // 2
+            painter.drawPixmap(int(x), int(y), cached_img)
             return
             
         if self.image:
