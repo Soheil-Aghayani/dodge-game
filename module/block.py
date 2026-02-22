@@ -7,6 +7,7 @@ from module.explosion import ExplosionAnimation
 
 class Block:
     obstacle_images = {}
+    scaled_obstacle_images = {}
     
     def __init__(self, game_widget):
         self.game_widget = game_widget
@@ -37,6 +38,37 @@ class Block:
                 "metalbox": QPixmap(os.path.join(image_path, "metalbox.png")),
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
+
+            # Pre-scale and center images for performance (only for static blocks)
+            Block.scaled_obstacle_images = {}
+            target_sizes = {
+                "metalbox": (40, 40),
+                "woodenbox": (40, 40)
+            }
+
+            for key, (w, h) in target_sizes.items():
+                original = Block.obstacle_images.get(key)
+                if original and not original.isNull():
+                    # Create transparent target pixmap
+                    target = QPixmap(w, h)
+                    target.fill(Qt.transparent)
+
+                    # Scale original
+                    scaled = original.scaled(w, h, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+
+                    # Calculate center position
+                    x_offset = (w - scaled.width()) // 2
+                    y_offset = (h - scaled.height()) // 2
+
+                    # Draw scaled onto target
+                    p = QPainter(target)
+                    p.setRenderHint(QPainter.Antialiasing)
+                    p.setRenderHint(QPainter.SmoothPixmapTransform)
+                    p.drawPixmap(x_offset, y_offset, scaled)
+                    p.end()
+
+                    # Store in scaled dictionary
+                    Block.scaled_obstacle_images[key] = target
         
         # Randomly select an image with weights
         weights = {
@@ -45,7 +77,12 @@ class Block:
             "woodenbox": 0.2
         }
         self.image_type = random.choices(list(weights.keys()), list(weights.values()))[0]
-        self.image = Block.obstacle_images.get(self.image_type)
+
+        # Use scaled image if available (static blocks), otherwise original (dynamic blocks)
+        if self.image_type in Block.scaled_obstacle_images:
+            self.image = Block.scaled_obstacle_images[self.image_type]
+        else:
+            self.image = Block.obstacle_images.get(self.image_type)
         
         # Set animation properties based on image type
         if self.image_type == "barrel":
@@ -149,6 +186,13 @@ class Block:
             return
             
         if self.image:
+            # Fast path for static blocks (no rotation, no pulse)
+            # The image is already pre-scaled and centered in a 40x40 container
+            # We explicitly check if it's one of the optimized types to be safe
+            if self.image_type in Block.scaled_obstacle_images and not self.should_rotate and not self.should_pulse:
+                painter.drawPixmap(int(self.x), int(self.y), self.image)
+                return
+
             img_w = self.image.width()
             img_h = self.image.height()
             block_w = self.width
