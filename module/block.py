@@ -7,6 +7,7 @@ from module.explosion import ExplosionAnimation
 
 class Block:
     obstacle_images = {}
+    scaled_obstacle_images = {}
     
     def __init__(self, game_widget):
         self.game_widget = game_widget
@@ -37,6 +38,33 @@ class Block:
                 "metalbox": QPixmap(os.path.join(image_path, "metalbox.png")),
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
+
+            # Pre-scale static images for performance
+            # Standard blocks are 40x40
+            for name in ["metalbox", "woodenbox"]:
+                if name in Block.obstacle_images:
+                    img = Block.obstacle_images[name]
+                    # Create transparent pixmap of target size
+                    scaled = QPixmap(40, 40)
+                    scaled.fill(Qt.transparent)
+
+                    p = QPainter(scaled)
+                    p.setRenderHint(QPainter.Antialiasing)
+                    p.setRenderHint(QPainter.SmoothPixmapTransform)
+
+                    # Calculate scale to fit in 40x40 while preserving aspect ratio
+                    scale = min(40 / img.width(), 40 / img.height())
+                    new_w = int(img.width() * scale)
+                    new_h = int(img.height() * scale)
+
+                    # Center the image
+                    x = (40 - new_w) // 2
+                    y = (40 - new_h) // 2
+
+                    p.drawPixmap(x, y, new_w, new_h, img)
+                    p.end()
+
+                    Block.scaled_obstacle_images[name] = scaled
         
         # Randomly select an image with weights
         weights = {
@@ -146,6 +174,11 @@ class Block:
             return
             
         if self.is_exploding:
+            return
+
+        # Optimization: Use pre-scaled image for static blocks
+        if self.image_type in Block.scaled_obstacle_images:
+            painter.drawPixmap(int(self.x), int(self.y), Block.scaled_obstacle_images[self.image_type])
             return
             
         if self.image:
