@@ -33,8 +33,17 @@ class Block:
         if not Block.obstacle_images:
             current_dir = os.path.dirname(os.path.abspath(__file__))
             image_path = os.path.join(current_dir, "asset", "obstacle")
+            barrel_img = QPixmap(os.path.join(image_path, "barrel.png"))
+            # Optimization: Scale down barrel image as it's very large
+            # (350x336) and rendered at ~50x50. Pre-scaling to 80x80
+            # maintains quality for pulses/rotations while significantly
+            # reducing rendering cost.
+            barrel_img = barrel_img.scaled(
+                80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+
             Block.obstacle_images = {
-                "barrel": QPixmap(os.path.join(image_path, "barrel.png")),
+                "barrel": barrel_img,
                 "metalbox": QPixmap(os.path.join(image_path, "metalbox.png")),
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
