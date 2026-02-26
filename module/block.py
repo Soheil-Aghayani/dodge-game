@@ -39,6 +39,15 @@ class Block:
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
 
+            # OPTIMIZATION: Downscale barrel image immediately.
+            # The original barrel.png is ~350x336 but is displayed at max ~58x58.
+            # Keeping the huge image causes significant slowdown when scaling/rotating every frame.
+            # We scale it to 80x80 to keep it crisp but much faster to process.
+            if "barrel" in Block.obstacle_images:
+                Block.obstacle_images["barrel"] = Block.obstacle_images["barrel"].scaled(
+                    80, 80, Qt.KeepAspectRatio, Qt.SmoothTransformation
+                )
+
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
             Block.scaled_obstacle_images = {}
