@@ -14,6 +14,8 @@ class PauseScreen(QWidget):
         background_path = os.path.join(current_dir, "asset", "background", "pause_background.png")
         self.background = QPixmap(background_path)
         
+        self.scaled_background = None
+
         # Load custom font
         font_path = os.path.join(current_dir, "asset", "font", "KarenFat.ttf")
         try:
@@ -34,6 +36,11 @@ class PauseScreen(QWidget):
             
         # Create buttons
         self.setup_buttons()
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Invalidate scaled background on resize
+        self.scaled_background = None
             
     def setup_buttons(self):
         # Create main vertical layout
@@ -105,15 +112,16 @@ class PauseScreen(QWidget):
         # Draw background image in cover mode
         if not self.background.isNull():
             # Calculate scaling to cover the widget while maintaining aspect ratio
-            scaled_pixmap = self.background.scaled(
-                self.size(),
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation
-            )
+            if self.scaled_background is None:
+                self.scaled_background = self.background.scaled(
+                    self.size(),
+                    Qt.KeepAspectRatioByExpanding,
+                    Qt.SmoothTransformation
+                )
             # Center the scaled pixmap
-            x = (scaled_pixmap.width() - self.width()) // 2
-            y = (scaled_pixmap.height() - self.height()) // 2
-            painter.drawPixmap(0, 0, scaled_pixmap, x, y, self.width(), self.height())
+            x = (self.scaled_background.width() - self.width()) // 2
+            y = (self.scaled_background.height() - self.height()) // 2
+            painter.drawPixmap(0, 0, self.scaled_background, x, y, self.width(), self.height())
         else:
             print("Warning: Background image is null")
         

@@ -1,0 +1,3 @@
+## 2024-05-24 - Per-frame Image Scaling Anti-Pattern in PyQt
+**Learning:** Calling `QPixmap.scaled()` or `self.image.scaled(...)` inside `draw()` or `paintEvent()` creates a severe performance bottleneck since it forces a new image allocation and expensive resizing calculation every single frame. This issue was found scattered across `shield.py`, `explosion.py` and `pause.py`.
+**Action:** Always pre-scale and cache images during object initialization (e.g., `__init__`) if their dimensions are static, or cache them lazily and recalculate only when their dimensions change (e.g., by overriding `resizeEvent` for backgrounds).
