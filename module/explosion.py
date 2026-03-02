@@ -10,6 +10,7 @@ class ExplosionAnimation(Animation):
         self.size = size
         self.is_finished = False
         self.current_frame = 0
+        self.scaled_frames = {}  # Cache for scaled frames
         
     def update(self, delta_time):
         if self.is_finished:
@@ -27,12 +28,17 @@ class ExplosionAnimation(Animation):
         if self.is_finished or not self.frames:
             return
             
-        current_frame = self.frames[self.current_frame]
-        if current_frame:
-            # Scale the explosion to be 2.5x larger than the block
-            scaled_size = int(self.size * 2.5)
-            # Use nearest neighbor scaling and maintain aspect ratio
-            scaled_frame = current_frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+        current_frame_img = self.frames[self.current_frame]
+        if current_frame_img:
+            # Check cache first
+            if self.current_frame not in self.scaled_frames:
+                # Scale the explosion to be 2.5x larger than the block
+                scaled_size = int(self.size * 2.5)
+                # Use nearest neighbor scaling and maintain aspect ratio
+                self.scaled_frames[self.current_frame] = current_frame_img.scaled(
+                    scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+
+            scaled_frame = self.scaled_frames[self.current_frame]
             
             # Center the explosion on the block's position
             x = self.x + (self.size - scaled_frame.width()) // 2
