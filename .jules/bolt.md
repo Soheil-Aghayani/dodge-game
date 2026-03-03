@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-scaling Images in PyQt Rendering Loops
+**Learning:** In PyQt applications, constantly calling `QPixmap.scaled()` or accessing properties during `paintEvent` or `draw` loops significantly degrades performance. For entities like shields and explosion animations that are dynamically drawn every frame, resizing images inside the `draw()` method is a critical bottleneck.
+**Action:** When working with dynamically drawn PyQt components (e.g. Explosion, Shield), scale and cache the images inside the `__init__` method (or when their size explicitly changes) and use these pre-scaled `QPixmap` objects in the `draw` method.
