@@ -1,0 +1,3 @@
+## 2024-05-22 - [Avoid Dynamic QPixmap Scaling in PyQt Game Loops]
+**Learning:** Constantly re-scaling images (e.g., `QPixmap.scaled`) inside `draw()` or `paintEvent()` in PyQt game loops is a severe bottleneck. I identified that `shield.py` and `explosion.py` were running scaling operations on every single frame, unnecessarily repeating expensive visual recalculations for static sizes.
+**Action:** When working with rendering elements where size only changes on specific events (or not at all during their lifetime), pre-scale and cache the `QPixmap` during `__init__` or the respective event. Draw the cached image rather than repeating the operation dynamically.
