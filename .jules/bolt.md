@@ -1,0 +1,3 @@
+## 2024-05-19 - [Pre-scale images instead of scaling on every frame]
+**Learning:** In PyQt game loops, constantly re-scaling images (e.g., `QPixmap.scaled`) inside `draw()` or `paintEvent()` is a severe bottleneck, especially for objects like `shield` or `explosion` which may draw every frame.
+**Action:** When creating sprites with known sizes relative to the player, or when the scale is fixed per instance, always pre-scale `QPixmap` during `__init__` or `resizeEvent` and store the result (e.g., in `self.scaled_image` or `self.scaled_frames`) rather than repeatedly scaling in the render loop.
