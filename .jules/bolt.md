@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-scaling images for performance in PyQt render loops
+**Learning:** Calling `QPixmap.scaled()` on every frame inside a `paintEvent` or `draw` loop is a significant performance bottleneck in PyQt applications, especially for dynamic entities like rotating/pulsing blocks, shields, and explosions.
+**Action:** Always pre-scale images during the `__init__` or creation phase of an entity, caching the scaled `QPixmap`. For dynamic elements that change size (like pulsing blocks), scale the base image to the default size first, so the per-frame scaling operation only calculates small relative differences rather than downscaling from a large, high-resolution source image every frame.

@@ -70,6 +70,20 @@ class Block:
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
             
+        # Optimization: Pre-scale base image for dynamic blocks
+        # Downscaling a large high-resolution base image every frame during
+        # rotation/pulsing is expensive. We scale it once to the block's base size.
+        if self.image_type not in Block.scaled_obstacle_images and self.image:
+            target_w, target_h = self.width, self.height
+            scale = min(target_w / self.image.width(), target_h / self.image.height())
+            new_w = int(self.image.width() * scale)
+            new_h = int(self.image.height() * scale)
+            self.scaled_base_image = self.image.scaled(
+                new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+            )
+        else:
+            self.scaled_base_image = None
+
     def update(self):
         if self.explosion and not self.explosion.is_finished:
             current_time = QTime.currentTime().msecsSinceStartOfDay()
@@ -172,19 +186,22 @@ class Block:
             painter.drawPixmap(int(x), int(y), scaled_img)
             return
 
-        if self.image:
-            img_w = self.image.width()
-            img_h = self.image.height()
+        if self.scaled_base_image:
+            img_w = self.scaled_base_image.width()
+            img_h = self.scaled_base_image.height()
             block_w = self.width
             block_h = self.height
             scale_pulse = 1.0
             if self.should_pulse:
                 scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
-            scale = min(block_w / img_w, block_h / img_h) * scale_pulse
-            new_w = int(img_w * scale)
-            new_h = int(img_h * scale)
+
+            # Since base image is already scaled to base dimensions,
+            # we only need to apply the pulse scale difference.
+            new_w = int(img_w * scale_pulse)
+            new_h = int(img_h * scale_pulse)
             x = self.x + (block_w - new_w) // 2
             y = self.y + (block_h - new_h) // 2
+
             if self.should_rotate:
                 painter.save()
                 # Use SmoothPixmapTransform for better quality rotation
@@ -202,6 +219,32 @@ class Block:
                 painter.translate(-new_w / 2, -new_h / 2)
 
                 # Draw the image
+                painter.drawPixmap(0, 0, int(new_w), int(new_h), self.scaled_base_image)
+                painter.restore()
+            else:
+                painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.scaled_base_image)
+        elif self.image:
+            # Fallback for dynamic blocks without pre-scaled base image
+            img_w = self.image.width()
+            img_h = self.image.height()
+            block_w = self.width
+            block_h = self.height
+            scale_pulse = 1.0
+            if self.should_pulse:
+                scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
+            scale = min(block_w / img_w, block_h / img_h) * scale_pulse
+            new_w = int(img_w * scale)
+            new_h = int(img_h * scale)
+            x = self.x + (block_w - new_w) // 2
+            y = self.y + (block_h - new_h) // 2
+            if self.should_rotate:
+                painter.save()
+                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+                center_x = x + new_w / 2
+                center_y = y + new_h / 2
+                painter.translate(center_x, center_y)
+                painter.rotate(self.angle)
+                painter.translate(-new_w / 2, -new_h / 2)
                 painter.drawPixmap(0, 0, int(new_w), int(new_h), self.image)
                 painter.restore()
             else:
