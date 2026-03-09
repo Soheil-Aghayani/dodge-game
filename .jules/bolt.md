@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-scale Dynamic Elements in render loops
+**Learning:** In PyQt game loops, calling `QPixmap.scaled()` constantly inside `draw()` or `paintEvent()` is a severe bottleneck, even for elements with dynamic lifetimes like `ExplosionAnimation` or `Shield`. Scaling animations or dynamic entities continuously consumes CPU unnecessarily.
+**Action:** When working on dynamic elements, pre-scale the image/animation frames during their instantiation (`__init__`) and cache the result for rendering. Do not rely exclusively on static class-level caches (like `Block.scaled_obstacle_images`) for entities that may have varied sizes per instance.
