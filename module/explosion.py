@@ -11,6 +11,16 @@ class ExplosionAnimation(Animation):
         self.is_finished = False
         self.current_frame = 0
         
+        # Optimization: Pre-scale explosion frames to avoid expensive resizing in draw()
+        self.scaled_frames = []
+        scaled_size = int(self.size * 2.5)
+        for frame in self.frames:
+            if frame:
+                scaled_frame = frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+                self.scaled_frames.append(scaled_frame)
+            else:
+                self.scaled_frames.append(None)
+
     def update(self, delta_time):
         if self.is_finished:
             return
@@ -24,16 +34,11 @@ class ExplosionAnimation(Animation):
                 return
                 
     def draw(self, painter):
-        if self.is_finished or not self.frames:
+        if self.is_finished or not self.scaled_frames:
             return
             
-        current_frame = self.frames[self.current_frame]
-        if current_frame:
-            # Scale the explosion to be 2.5x larger than the block
-            scaled_size = int(self.size * 2.5)
-            # Use nearest neighbor scaling and maintain aspect ratio
-            scaled_frame = current_frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
-            
+        scaled_frame = self.scaled_frames[self.current_frame]
+        if scaled_frame:
             # Center the explosion on the block's position
             x = self.x + (self.size - scaled_frame.width()) // 2
             y = self.y + (self.size - scaled_frame.height()) // 2
