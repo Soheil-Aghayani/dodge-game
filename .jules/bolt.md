@@ -1,0 +1,3 @@
+## 2026-03-12 - [Pre-scale Images in PyQt Games]
+**Learning:** Calling `QPixmap.scaled` inside `paintEvent` or `draw` loops is extremely expensive because it dynamically resizes images using CPU operations on every single frame. This becomes especially problematic for animated states (explosions, dynamic shields, pulsing/rotating items) that have to perform these on every tick.
+**Action:** Always pre-scale textures during `__init__` and store the cached scaled version. If an object uses dynamic scaling (like pulsing), base that scaling on a pre-scaled maximum-size texture instead of repeatedly downscaling from the huge original high-res texture.

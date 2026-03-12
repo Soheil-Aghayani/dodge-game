@@ -42,11 +42,12 @@ class Block:
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
             Block.scaled_obstacle_images = {}
-            for type_name in ["metalbox", "woodenbox"]:
+            for type_name in ["metalbox", "woodenbox", "barrel"]:
                 if type_name in Block.obstacle_images:
                     img = Block.obstacle_images[type_name]
-                    # Use current block dimensions for scaling
-                    target_w, target_h = self.width, self.height
+                    # Barrels have a base dimension of 50x50, others 40x40
+                    target_w = 50 if type_name == "barrel" else self.width
+                    target_h = 50 if type_name == "barrel" else self.height
                     scale = min(target_w / img.width(), target_h / img.height())
                     new_w = int(img.width() * scale)
                     new_h = int(img.height() * scale)
@@ -61,7 +62,6 @@ class Block:
             "woodenbox": 0.2
         }
         self.image_type = random.choices(list(weights.keys()), list(weights.values()))[0]
-        self.image = Block.obstacle_images.get(self.image_type)
         
         # Set animation properties based on image type
         if self.image_type == "barrel":
@@ -70,6 +70,10 @@ class Block:
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
             
+        # Optimization: Point self.image directly to the pre-scaled texture
+        # to ensure dynamic rotations/pulsing sample from a tiny texture
+        self.image = Block.scaled_obstacle_images.get(self.image_type)
+
     def update(self):
         if self.explosion and not self.explosion.is_finished:
             current_time = QTime.currentTime().msecsSinceStartOfDay()
@@ -165,7 +169,7 @@ class Block:
             return
             
         # Optimization: Use pre-scaled image for static blocks to avoid expensive resizing every frame
-        if self.image_type in Block.scaled_obstacle_images:
+        if self.image_type in Block.scaled_obstacle_images and not (self.should_rotate or self.should_pulse):
             scaled_img = Block.scaled_obstacle_images[self.image_type]
             x = self.x + (self.width - scaled_img.width()) // 2
             y = self.y + (self.height - scaled_img.height()) // 2
@@ -180,9 +184,12 @@ class Block:
             scale_pulse = 1.0
             if self.should_pulse:
                 scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
-            scale = min(block_w / img_w, block_h / img_h) * scale_pulse
-            new_w = int(img_w * scale)
-            new_h = int(img_h * scale)
+
+            # Since self.image is now already pre-scaled to max 50x50,
+            # we just need to apply the pulse scaling to the current texture size
+            new_w = int(img_w * scale_pulse)
+            new_h = int(img_h * scale_pulse)
+
             x = self.x + (block_w - new_w) // 2
             y = self.y + (block_h - new_h) // 2
             if self.should_rotate:
