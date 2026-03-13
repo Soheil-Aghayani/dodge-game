@@ -53,6 +53,19 @@ class Block:
                     Block.scaled_obstacle_images[type_name] = img.scaled(
                         new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
                     )
+
+            # Pre-scale dynamic images (barrel) to base size
+            if "barrel" in Block.obstacle_images:
+                img = Block.obstacle_images["barrel"]
+                target_w, target_h = 50, 50 # Barrels are 50x50
+                scale = min(target_w / img.width(), target_h / img.height())
+                new_w = int(img.width() * scale)
+                new_h = int(img.height() * scale)
+                # Instead of overwriting obstacle_images, let's keep the scaled version in scaled_obstacle_images
+                # but draw() will still pulse and rotate it.
+                Block.scaled_obstacle_images["barrel_base"] = img.scaled(
+                    new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+                )
         
         # Randomly select an image with weights
         weights = {
@@ -61,7 +74,6 @@ class Block:
             "woodenbox": 0.2
         }
         self.image_type = random.choices(list(weights.keys()), list(weights.values()))[0]
-        self.image = Block.obstacle_images.get(self.image_type)
         
         # Set animation properties based on image type
         if self.image_type == "barrel":
@@ -69,6 +81,10 @@ class Block:
             self.should_pulse = True
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
+            # Assign the base scaled image for dynamic scaling instead of the raw 350x336 image
+            self.image = Block.scaled_obstacle_images.get("barrel_base")
+        else:
+            self.image = Block.obstacle_images.get(self.image_type)
             
     def update(self):
         if self.explosion and not self.explosion.is_finished:
