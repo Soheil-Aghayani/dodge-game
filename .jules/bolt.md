@@ -1,0 +1,3 @@
+## 2024-03-16 - Pre-scale Dynamic Elements in PyQt Games
+**Learning:** In PyQt game loops, constantly re-scaling images (e.g., `QPixmap.scaled`) inside `draw()` or `paintEvent()` is a severe bottleneck. I discovered this issue in `module/shield.py` and `module/explosion.py` where images were being re-scaled every single frame.
+**Action:** When creating visual entities like explosions or shields, pre-scale the images to their required sizes and cache them during initialization (`__init__`) or when their size explicitly changes, rather than doing it on-the-fly inside the render loop. Ensure the new scaled images are stored in instance variables (like `self.scaled_frames`) to avoid mutating global state or recalculating them later.
