@@ -53,6 +53,17 @@ class Block:
                     Block.scaled_obstacle_images[type_name] = img.scaled(
                         new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
                     )
+
+            # Pre-scale barrel to its base size (50x50) to avoid scaling a large image down dynamically
+            if "barrel" in Block.obstacle_images:
+                img = Block.obstacle_images["barrel"]
+                target_w, target_h = 50, 50
+                scale = min(target_w / img.width(), target_h / img.height())
+                new_w = int(img.width() * scale)
+                new_h = int(img.height() * scale)
+                Block.obstacle_images["barrel"] = img.scaled(
+                    new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+                )
         
         # Randomly select an image with weights
         weights = {
@@ -70,6 +81,14 @@ class Block:
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
             
+        # Cache image dimensions to avoid Python-to-C++ calls in draw
+        if self.image and not self.image.isNull():
+            self.img_w = self.image.width()
+            self.img_h = self.image.height()
+        else:
+            self.img_w = 0
+            self.img_h = 0
+
     def update(self):
         if self.explosion and not self.explosion.is_finished:
             current_time = QTime.currentTime().msecsSinceStartOfDay()
@@ -172,14 +191,18 @@ class Block:
             painter.drawPixmap(int(x), int(y), scaled_img)
             return
 
-        if self.image:
-            img_w = self.image.width()
-            img_h = self.image.height()
+        if self.image and self.img_w > 0 and self.img_h > 0:
+            img_w = self.img_w
+            img_h = self.img_h
             block_w = self.width
             block_h = self.height
             scale_pulse = 1.0
             if self.should_pulse:
                 scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
+
+            # Optimization: for barrels without pulsing (if applicable), we can avoid scaling
+            # if img_w/img_h matches block_w/block_h, but since it pulses, we still scale.
+            # But at least img_w and img_h are now cached and barrel is much smaller.
             scale = min(block_w / img_w, block_h / img_h) * scale_pulse
             new_w = int(img_w * scale)
             new_h = int(img_h * scale)
