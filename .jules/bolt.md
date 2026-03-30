@@ -1,0 +1,4 @@
+
+## 2024-05-20 - Pre-scale Dynamic Elements in PyQt Render Loop
+**Learning:** Constantly re-scaling `QPixmap` images (e.g. `QPixmap.scaled()`) inside `draw()` or `paintEvent()` creates severe bottlenecks in PyQt rendering loops. When dynamically sized elements (like explosions that are 2.5x base size or shields that are 1.5x player size) inherit or use base image lists, scaling them on the fly per-frame tanks performance. Furthermore, mutating shared state like `self.frames` during initialization globally corrupts other instances.
+**Action:** Always pre-scale frames and images during object initialization (`__init__`) based on their expected dimensions and store them in separate instance properties (e.g. `self.scaled_frames`, `self.scaled_shield`). Ensure `draw()` only performs pure rendering without any pixel recalculation (scaling, transforming) when possible.
