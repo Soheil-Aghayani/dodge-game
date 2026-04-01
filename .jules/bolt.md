@@ -1,0 +1,3 @@
+## 2024-05-24 - Pre-scale Images for Dynamic Objects
+**Learning:** In PyQt game loops, constantly re-scaling images (e.g., `QPixmap.scaled`) inside `draw()` or `paintEvent()` is a severe bottleneck. I attempted to do this for dynamically drawn objects like explosions and shields, but found out that it creates significant frame drops.
+**Action:** When creating dynamic objects, like explosions or shields whose size is constant over their lifetime, pre-scale the image inside their `__init__` method and draw the pre-scaled image instead of scaling on the fly in `draw()`. If creating animations, pre-scale the frames beforehand and keep them in a separate attribute.
