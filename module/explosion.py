@@ -11,6 +11,17 @@ class ExplosionAnimation(Animation):
         self.is_finished = False
         self.current_frame = 0
         
+        # ⚡ Bolt Optimization: Pre-scale explosion frames
+        # Scale the explosion to be 2.5x larger than the block
+        scaled_size = int(self.size * 2.5)
+        self.scaled_frames = []
+        for frame in self.frames:
+            if not frame.isNull():
+                scaled = frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+                self.scaled_frames.append(scaled)
+            else:
+                self.scaled_frames.append(frame)
+
     def update(self, delta_time):
         if self.is_finished:
             return
@@ -24,18 +35,14 @@ class ExplosionAnimation(Animation):
                 return
                 
     def draw(self, painter):
-        if self.is_finished or not self.frames:
+        if self.is_finished or not self.scaled_frames:
             return
             
-        current_frame = self.frames[self.current_frame]
-        if current_frame:
-            # Scale the explosion to be 2.5x larger than the block
-            scaled_size = int(self.size * 2.5)
-            # Use nearest neighbor scaling and maintain aspect ratio
-            scaled_frame = current_frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
-            
+        # ⚡ Bolt Optimization: Use pre-scaled frames instead of scaling every frame
+        current_frame = self.scaled_frames[self.current_frame]
+        if current_frame and not current_frame.isNull():
             # Center the explosion on the block's position
-            x = self.x + (self.size - scaled_frame.width()) // 2
-            y = self.y + (self.size - scaled_frame.height()) // 2
+            x = self.x + (self.size - current_frame.width()) // 2
+            y = self.y + (self.size - current_frame.height()) // 2
             
-            painter.drawPixmap(int(x), int(y), scaled_frame) 
+            painter.drawPixmap(int(x), int(y), current_frame)
