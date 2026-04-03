@@ -14,6 +14,13 @@ class Shield:
         # Shield should be 20% larger than player
         self.width = int(player.width * 1.5)
         self.height = int(player.height * 1.5)
+
+        # Pre-scale shield image to match shield size
+        if not self.image.isNull():
+            self.scaled_image = self.image.scaled(self.width, self.height,
+                Qt.KeepAspectRatio, Qt.FastTransformation)
+        else:
+            self.scaled_image = QPixmap()
             
     def get_rect(self):
         # Center the shield hitbox around the player
@@ -27,7 +34,7 @@ class Shield:
         )
         
     def draw(self, painter):
-        if not self.image.isNull():
+        if not self.scaled_image.isNull():
             # Only draw if health system says we're visible (for blinking effect)
             if not hasattr(self.player.game_widget, 'health_system') or \
                self.player.game_widget.health_system.is_visible:
@@ -35,14 +42,10 @@ class Shield:
                 x_offset = (self.width - self.player.width) // 2
                 y_offset = (self.height - self.player.height) // 2
                 
-                # Scale shield image to match shield size
-                scaled_shield = self.image.scaled(self.width, self.height, 
-                    Qt.KeepAspectRatio, Qt.FastTransformation)
-                
                 painter.setOpacity(0.7)  # Make shield semi-transparent
                 painter.drawPixmap(
                     int(self.player.x - x_offset),
                     int(self.player.y - y_offset),
-                    scaled_shield
+                    self.scaled_image
                 )
                 painter.setOpacity(1.0)  # Reset opacity
