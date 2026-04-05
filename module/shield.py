@@ -11,9 +11,14 @@ class Shield:
         shield_path = os.path.join(current_dir, "asset", "shield", "1.png")
         self.image = QPixmap(shield_path)
         
-        # Shield should be 20% larger than player
+        # Shield should be 50% larger than player
         self.width = int(player.width * 1.5)
         self.height = int(player.height * 1.5)
+
+        # Optimization: Pre-scale shield image to match shield size during initialization
+        # instead of scaling every frame in draw() to improve rendering performance.
+        self.scaled_image = self.image.scaled(self.width, self.height,
+            Qt.KeepAspectRatio, Qt.FastTransformation)
             
     def get_rect(self):
         # Center the shield hitbox around the player
@@ -35,14 +40,10 @@ class Shield:
                 x_offset = (self.width - self.player.width) // 2
                 y_offset = (self.height - self.player.height) // 2
                 
-                # Scale shield image to match shield size
-                scaled_shield = self.image.scaled(self.width, self.height, 
-                    Qt.KeepAspectRatio, Qt.FastTransformation)
-                
                 painter.setOpacity(0.7)  # Make shield semi-transparent
                 painter.drawPixmap(
                     int(self.player.x - x_offset),
                     int(self.player.y - y_offset),
-                    scaled_shield
+                    self.scaled_image
                 )
                 painter.setOpacity(1.0)  # Reset opacity
