@@ -13,6 +13,7 @@ class PauseScreen(QWidget):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         background_path = os.path.join(current_dir, "asset", "background", "pause_background.png")
         self.background = QPixmap(background_path)
+        self._scaled_background = None
         
         # Load custom font
         font_path = os.path.join(current_dir, "asset", "font", "KarenFat.ttf")
@@ -35,6 +36,21 @@ class PauseScreen(QWidget):
         # Create buttons
         self.setup_buttons()
             
+    def _update_scaled_background(self):
+        """Scale the background image to cover the widget while maintaining aspect ratio."""
+        if hasattr(self, 'background') and not self.background.isNull() and not self.size().isEmpty():
+            self._scaled_background = self.background.scaled(
+                self.size(),
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation
+            )
+        else:
+            self._scaled_background = None
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_scaled_background()
+
     def setup_buttons(self):
         # Create main vertical layout
         main_layout = QVBoxLayout(self)
@@ -102,18 +118,15 @@ class PauseScreen(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
-        # Draw background image in cover mode
-        if not self.background.isNull():
-            # Calculate scaling to cover the widget while maintaining aspect ratio
-            scaled_pixmap = self.background.scaled(
-                self.size(),
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation
-            )
+        # Draw background image in cover mode using cached scaled image
+        # Performance optimization: Avoid calculating scaled pixmap on every frame
+        if self._scaled_background:
             # Center the scaled pixmap
-            x = (scaled_pixmap.width() - self.width()) // 2
-            y = (scaled_pixmap.height() - self.height()) // 2
-            painter.drawPixmap(0, 0, scaled_pixmap, x, y, self.width(), self.height())
+            x = (self._scaled_background.width() - self.width()) // 2
+            y = (self._scaled_background.height() - self.height()) // 2
+            painter.drawPixmap(0, 0, self._scaled_background, x, y, self.width(), self.height())
+        elif not self.background.isNull():
+            pass
         else:
             print("Warning: Background image is null")
         
