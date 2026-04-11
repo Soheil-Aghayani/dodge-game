@@ -39,6 +39,13 @@ class Block:
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
 
+            # ⚡ Bolt Optimization: Pre-scale large dynamic barrel image to its base size (50x50)
+            # to prevent expensive scaling operations in the render loop.
+            barrel_img = Block.obstacle_images["barrel"]
+            Block.obstacle_images["barrel"] = barrel_img.scaled(
+                50, 50, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+            )
+
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
             Block.scaled_obstacle_images = {}
