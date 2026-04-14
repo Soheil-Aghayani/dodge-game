@@ -53,6 +53,22 @@ class Block:
                     Block.scaled_obstacle_images[type_name] = img.scaled(
                         new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
                     )
+
+            # ⚡ Bolt: Pre-scale large dynamic images to their base size
+            # Barrels are rendered at 50x50, but original image is 350x336.
+            # Scaling it once during init prevents extremely expensive downscaling
+            # on every frame during its rotate/pulse render loop.
+            if "barrel" in Block.obstacle_images:
+                img = Block.obstacle_images["barrel"]
+                target_w, target_h = 50, 50
+                scale = min(target_w / img.width(), target_h / img.height())
+                new_w = int(img.width() * scale)
+                new_h = int(img.height() * scale)
+                # Overwrite original large image with the pre-scaled version
+                # so that any subsequent dynamic scaling (pulse) is fast.
+                Block.obstacle_images["barrel"] = img.scaled(
+                    new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+                )
         
         # Randomly select an image with weights
         weights = {
