@@ -114,7 +114,7 @@ class Player:
             
     def draw(self, painter):
         if self.current_animation:
-            frame = self.current_animation.get_current_frame()
+            frame = self.current_animation.get_current_frame(facing_right=self.facing_right)
             if frame:
                 # Draw shield first if invincible (so it appears behind the player)
                 if hasattr(self.game_widget, 'health_system') and \
@@ -125,17 +125,8 @@ class Player:
                 # Save the current painter state
                 painter.save()
                 
-                # Apply horizontal flip if needed
-                if not self.facing_right:
-                    # Move to the right edge of the character
-                    painter.translate(self.x + self.width, self.y)
-                    # Flip horizontally
-                    painter.scale(-1, 1)
-                    # Draw the frame
-                    painter.drawPixmap(0, 0, frame)
-                else:
-                    # Draw normally if facing right
-                    painter.drawPixmap(int(self.x), int(self.y), frame)
+                # Draw normally with pre-flipped frames
+                painter.drawPixmap(int(self.x), int(self.y), frame)
                 
                 # Restore the painter state
                 painter.restore()
