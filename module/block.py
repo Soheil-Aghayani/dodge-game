@@ -39,6 +39,14 @@ class Block:
                 "woodenbox": QPixmap(os.path.join(image_path, "woodenbox.png"))
             }
 
+            # Pre-scale barrel directly within obstacle_images to its base dimensions (50x50)
+            # to avoid severe performance bottlenecks during the render loop when it pulses and rotates
+            barrel_img = Block.obstacle_images["barrel"]
+            scale = min(50 / barrel_img.width(), 50 / barrel_img.height())
+            Block.obstacle_images["barrel"] = barrel_img.scaled(
+                int(barrel_img.width() * scale), int(barrel_img.height() * scale), Qt.IgnoreAspectRatio, Qt.SmoothTransformation
+            )
+
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
             Block.scaled_obstacle_images = {}
