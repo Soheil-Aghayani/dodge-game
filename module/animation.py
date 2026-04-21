@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QPixmap
+from PyQt5.QtGui import QPixmap, QTransform
 from PyQt5.QtCore import Qt
 import os
 import math
@@ -6,6 +6,7 @@ import math
 class Animation:
     def __init__(self, folder_name, frame_count, frame_delay=100):
         self.frames = []
+        self.flipped_frames = []
         self.current_frame = 0
         self.frame_count = frame_count
         self.frame_delay = frame_delay
@@ -23,6 +24,7 @@ class Animation:
                 # Scale frame to exact dimensions (48x81) using nearest neighbor for pixel art
                 frame = frame.scaled(48, 81, Qt.IgnoreAspectRatio, Qt.FastTransformation)
                 self.frames.append(frame)
+                self.flipped_frames.append(frame.transformed(QTransform().scale(-1, 1)))
                 
     def update(self, delta_time):
         self.time_accumulated += delta_time
@@ -30,8 +32,10 @@ class Animation:
             self.time_accumulated = 0
             self.current_frame = (self.current_frame + 1) % len(self.frames)
             
-    def get_current_frame(self):
+    def get_current_frame(self, flipped=False):
         if self.frames:
+            if flipped and self.flipped_frames:
+                return self.flipped_frames[self.current_frame]
             return self.frames[self.current_frame]
         return None
         
