@@ -13,6 +13,7 @@ class PauseScreen(QWidget):
         current_dir = os.path.dirname(os.path.abspath(__file__))
         background_path = os.path.join(current_dir, "asset", "background", "pause_background.png")
         self.background = QPixmap(background_path)
+        self._scaled_background = None
         
         # Load custom font
         font_path = os.path.join(current_dir, "asset", "font", "KarenFat.ttf")
@@ -98,22 +99,31 @@ class PauseScreen(QWidget):
         """)
         return button
             
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # ⚡ BOLT OPTIMIZATION:
+        # Pre-scale and cache the background image when the widget resizes.
+        # Doing this here rather than in paintEvent() avoids expensive image scaling
+        # operations on every frame, significantly improving rendering performance.
+        if self.background and not self.background.isNull() and not self.size().isEmpty():
+            self._scaled_background = self.background.scaled(
+                self.size(),
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation
+            )
+        else:
+            self._scaled_background = None
+
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
         # Draw background image in cover mode
-        if not self.background.isNull():
-            # Calculate scaling to cover the widget while maintaining aspect ratio
-            scaled_pixmap = self.background.scaled(
-                self.size(),
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation
-            )
+        if self._scaled_background and not self._scaled_background.isNull():
             # Center the scaled pixmap
-            x = (scaled_pixmap.width() - self.width()) // 2
-            y = (scaled_pixmap.height() - self.height()) // 2
-            painter.drawPixmap(0, 0, scaled_pixmap, x, y, self.width(), self.height())
+            x = (self._scaled_background.width() - self.width()) // 2
+            y = (self._scaled_background.height() - self.height()) // 2
+            painter.drawPixmap(0, 0, self._scaled_background, x, y, self.width(), self.height())
         else:
             print("Warning: Background image is null")
         
