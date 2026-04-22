@@ -26,8 +26,9 @@ class DiePlayer(Animation):
                     self.current_frame = len(self.frames) - 1  # Stay on last frame
                     self.is_finished = True
                     
-    def get_current_frame(self):
-        frame = self.frames[min(len(self.frames) - 1, self.current_frame)]
+    def get_current_frame(self, facing_right=True):
+        frame_idx = min(len(self.frames) - 1, self.current_frame)
+        frame = self.frames[frame_idx] if facing_right else self.flipped_frames[frame_idx]
         if frame and self.opacity < 1.0:
             # Create a copy of the frame for opacity modification
             temp = QPixmap(frame.size())
