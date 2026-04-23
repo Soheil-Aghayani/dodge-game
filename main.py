@@ -114,6 +114,23 @@ class GameWidget(QWidget):
         except Exception as e:
             print(f"Error loading font: {e}")
             self.font_family = 'Arial'
+
+        # Cache QFonts to avoid expensive instantiations in paintEvent
+        self.cached_font_20 = QFont(self.font_family, 20)
+        self.cached_font_48 = QFont(self.font_family, 48)
+        self.cached_font_32 = QFont(self.font_family, 32)
+        self.cached_font_22 = QFont(self.font_family, 22)
+        self.cached_font_28_bold = QFont(self.font_family, 28, QFont.Bold)
+
+        # Cache QColors
+        self.cached_color_white = QColor(255, 255, 255)
+        self.cached_color_overlay = QColor(0, 0, 0, 180)
+        self.cached_color_warning = QColor(255, 200, 0)
+
+        # Pre-calculate static text bounding rects using temporary QFontMetrics
+        from PyQt5.QtGui import QFontMetrics
+        metrics_48 = QFontMetrics(self.cached_font_48)
+        self.cached_rect_game_over = metrics_48.boundingRect("Game Over!")
         
         self.abnormal_manager = AbnormalManager()
         self.glitch_timer = 0
@@ -290,8 +307,8 @@ class GameWidget(QWidget):
             block.draw(painter)
             
         # Draw score
-        painter.setPen(QColor(255, 255, 255))
-        painter.setFont(QFont(self.font_family, 20))
+        painter.setPen(self.cached_color_white)
+        painter.setFont(self.cached_font_20)
         painter.drawText(10, 30, f"Score: {self.score}")
         
         # Draw health after score
@@ -300,19 +317,17 @@ class GameWidget(QWidget):
         # Draw death screen overlay
         if self.show_death_screen:
             # Semi-transparent black overlay
-            overlay = QColor(0, 0, 0, 180)
-            painter.fillRect(self.rect(), overlay)
+            painter.fillRect(self.rect(), self.cached_color_overlay)
             
             # Draw Game Over text with KarenFat font
-            painter.setPen(QColor(255, 255, 255))
-            painter.setFont(QFont(self.font_family, 48))
-            text_rect = painter.fontMetrics().boundingRect("Game Over!")
-            x = (self.width() - text_rect.width()) // 2
-            y = (self.height() - text_rect.height()) // 2 - 40
+            painter.setPen(self.cached_color_white)
+            painter.setFont(self.cached_font_48)
+            x = (self.width() - self.cached_rect_game_over.width()) // 2
+            y = (self.height() - self.cached_rect_game_over.height()) // 2 - 40
             painter.drawText(x, y, "Game Over!")
             
             # Draw Score with KarenFat font
-            painter.setFont(QFont(self.font_family, 32))
+            painter.setFont(self.cached_font_32)
             score_text = f"Score: {self.score}"
             text_rect = painter.fontMetrics().boundingRect(score_text)
             x = (self.width() - text_rect.width()) // 2
@@ -320,7 +335,7 @@ class GameWidget(QWidget):
             painter.drawText(x, y, score_text)
             
             # Draw restart instruction with KarenFat font
-            painter.setFont(QFont(self.font_family, 22))
+            painter.setFont(self.cached_font_22)
             restart_text = "Press R to restart"
             text_rect = painter.fontMetrics().boundingRect(restart_text)
             x = (self.width() - text_rect.width()) // 2
@@ -328,7 +343,7 @@ class GameWidget(QWidget):
             painter.drawText(x, y, restart_text)
             
             # Draw High Score
-            painter.setFont(QFont(self.font_family, 22))
+            painter.setFont(self.cached_font_22)
             hs_text = f"High Score: {self.high_score}"
             text_rect = painter.fontMetrics().boundingRect(hs_text)
             x = (self.width() - text_rect.width()) // 2
@@ -343,8 +358,8 @@ class GameWidget(QWidget):
                 'reverse_control': 'reverse control',
                 'random_blocks': 'random blocks'
             }.get(abnormal_type, 'abnormal state')
-            painter.setPen(QColor(255, 200, 0))
-            painter.setFont(QFont(self.font_family, 28, QFont.Bold))
+            painter.setPen(self.cached_color_warning)
+            painter.setFont(self.cached_font_28_bold)
             text_rect = painter.fontMetrics().boundingRect(warning_text)
             x = (self.width() - text_rect.width()) // 2
             y = 60
