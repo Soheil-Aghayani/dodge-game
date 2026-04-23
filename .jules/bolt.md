@@ -10,3 +10,6 @@
 ## 2024-06-25 - [Pre-scale Sprite Flips in Render Loops]
 **Learning:** In PyQt game loops, dynamically flipping sprites using `painter.scale(-1, 1)` and `painter.translate` during `paintEvent` or `draw` methods is significantly slower (~6.8x slower in benchmarks) than drawing pre-cached transformed pixmaps.
 **Action:** When initializing animation frames, use `QPixmap.transformed(QTransform().scale(-1, 1))` to pre-cache horizontally flipped versions of the frames alongside the normal ones. Then, select the correct pre-cached frame based on the facing direction to avoid expensive transform state changes in the render loop.
+## 2024-08-01 - [Pre-cache Fonts, Colors, and Static Metrics in Render Loops]
+**Learning:** In PyQt game loops, repeatedly instantiating `QFont` and `QColor` objects, or dynamically calculating static text boundaries using `QFontMetrics.boundingRect()` inside `paintEvent()`, creates significant performance overhead (hundreds of milliseconds over 10k loops).
+**Action:** Always pre-cache these objects and metrics during widget initialization (e.g., in `__init__`) as instance variables and reuse them in the render loop.
