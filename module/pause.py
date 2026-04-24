@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QVBoxLayout, QHBoxLayout
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QColor, QFont, QFontDatabase, QPixmap
+from PyQt5.QtGui import QPainter, QColor, QFont, QFontDatabase, QPixmap, QFontMetrics
 import os
 
 class PauseScreen(QWidget):
@@ -33,6 +33,15 @@ class PauseScreen(QWidget):
             print(f"Error loading font: {e}")
             self.font_family = 'Arial'
             
+        # Pre-cache objects for paintEvent optimization
+        self._cached_overlay_color = QColor(0, 0, 0, 180)
+        self._cached_text_color = QColor(255, 255, 255)
+        self._cached_font = QFont(self.font_family, 72, QFont.Bold)
+
+        # Pre-calculate bounding rect for "PAUSED" text
+        metrics = QFontMetrics(self._cached_font)
+        self._cached_text_rect = metrics.boundingRect("PAUSED")
+
         # Create buttons
         self.setup_buttons()
             
@@ -128,14 +137,12 @@ class PauseScreen(QWidget):
             print("Warning: Background image is null")
         
         # Draw semi-transparent overlay
-        overlay = QColor(0, 0, 0, 180)
-        painter.fillRect(self.rect(), overlay)
+        painter.fillRect(self.rect(), self._cached_overlay_color)
         
         # Draw "PAUSED" text with custom font
-        painter.setPen(QColor(255, 255, 255))
-        painter.setFont(QFont(self.font_family, 72, QFont.Bold))
-        text_rect = painter.fontMetrics().boundingRect("PAUSED")
-        x = (self.width() - text_rect.width()) // 2
+        painter.setPen(self._cached_text_color)
+        painter.setFont(self._cached_font)
+        x = (self.width() - self._cached_text_rect.width()) // 2
         y = 150
         painter.drawText(x, y, "PAUSED")
             
