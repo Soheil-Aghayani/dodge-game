@@ -13,3 +13,7 @@
 ## 2024-08-01 - [Pre-cache Fonts, Colors, and Static Metrics in Render Loops]
 **Learning:** In PyQt game loops, repeatedly instantiating `QFont` and `QColor` objects, or dynamically calculating static text boundaries using `QFontMetrics.boundingRect()` inside `paintEvent()`, creates significant performance overhead (hundreds of milliseconds over 10k loops).
 **Action:** Always pre-cache these objects and metrics during widget initialization (e.g., in `__init__`) as instance variables and reuse them in the render loop.
+
+## 2024-04-24 - [Avoid Instantiating UI Primitives in PyQt Loops]
+**Learning:** Instantiating `QFont`, `QColor`, and calculating `QFontMetrics.boundingRect` dynamically inside `paintEvent` creates significant overhead in PyQt since these methods are called every frame.
+**Action:** Always instantiate immutable styling objects (`QFont`, `QColor`) and pre-compute static text boundaries using `QFontMetrics` inside `__init__` (or whenever the underlying static data changes) to pass them directly to the `QPainter` within `paintEvent`.
