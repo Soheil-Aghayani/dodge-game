@@ -132,6 +132,16 @@ class GameWidget(QWidget):
         metrics_48 = QFontMetrics(self.cached_font_48)
         self.cached_rect_game_over = metrics_48.boundingRect("Game Over!")
         
+        metrics_22 = QFontMetrics(self.cached_font_22)
+        self.cached_rect_restart = metrics_22.boundingRect("Press R to restart")
+
+        metrics_28_bold = QFontMetrics(self.cached_font_28_bold)
+        self.cached_warning_rects = {
+            'reverse floor': metrics_28_bold.boundingRect('reverse floor'),
+            'reverse control': metrics_28_bold.boundingRect('reverse control'),
+            'random blocks': metrics_28_bold.boundingRect('random blocks')
+        }
+
         self.abnormal_manager = AbnormalManager()
         self.glitch_timer = 0
         self.pending_abnormal_type = None
@@ -337,7 +347,7 @@ class GameWidget(QWidget):
             # Draw restart instruction with KarenFat font
             painter.setFont(self.cached_font_22)
             restart_text = "Press R to restart"
-            text_rect = painter.fontMetrics().boundingRect(restart_text)
+            text_rect = self.cached_rect_restart
             x = (self.width() - text_rect.width()) // 2
             y += text_rect.height() + 30
             painter.drawText(x, y, restart_text)
@@ -360,7 +370,7 @@ class GameWidget(QWidget):
             }.get(abnormal_type, 'abnormal state')
             painter.setPen(self.cached_color_warning)
             painter.setFont(self.cached_font_28_bold)
-            text_rect = painter.fontMetrics().boundingRect(warning_text)
+            text_rect = self.cached_warning_rects.get(warning_text, painter.fontMetrics().boundingRect(warning_text))
             x = (self.width() - text_rect.width()) // 2
             y = 60
             painter.drawText(x, y, warning_text)

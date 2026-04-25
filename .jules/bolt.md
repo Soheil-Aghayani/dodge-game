@@ -17,3 +17,6 @@
 ## 2024-04-24 - [Avoid Instantiating UI Primitives in PyQt Loops]
 **Learning:** Instantiating `QFont`, `QColor`, and calculating `QFontMetrics.boundingRect` dynamically inside `paintEvent` creates significant overhead in PyQt since these methods are called every frame.
 **Action:** Always instantiate immutable styling objects (`QFont`, `QColor`) and pre-compute static text boundaries using `QFontMetrics` inside `__init__` (or whenever the underlying static data changes) to pass them directly to the `QPainter` within `paintEvent`.
+## 2024-08-02 - [Cache static QFontMetrics bounding rects]
+**Learning:** Calling `QFontMetrics.boundingRect` dynamically for static texts inside a PyQt `paintEvent` introduces unnecessary layout calculation overhead on every frame, reducing frame rate.
+**Action:** Identify static strings (e.g. static UI labels, game over texts, warning instructions) and pre-calculate their bounding rects in the `__init__` function using `QFontMetrics` to avoid repeated computation in `paintEvent`.
