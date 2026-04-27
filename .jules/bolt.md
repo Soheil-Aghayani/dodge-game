@@ -20,3 +20,6 @@
 ## 2024-08-02 - [Cache static QFontMetrics bounding rects]
 **Learning:** Calling `QFontMetrics.boundingRect` dynamically for static texts inside a PyQt `paintEvent` introduces unnecessary layout calculation overhead on every frame, reducing frame rate.
 **Action:** Identify static strings (e.g. static UI labels, game over texts, warning instructions) and pre-calculate their bounding rects in the `__init__` function using `QFontMetrics` to avoid repeated computation in `paintEvent`.
+## 2024-05-24 - [Tiling Optimization]
+**Learning:** Tiling an image across the screen using a loop of `painter.drawPixmap` calls inside a PyQt `paintEvent` or `draw` loop is highly inefficient.
+**Action:** Pre-render the tiled pattern onto a single, full-width `QPixmap` (e.g., initialized during `__init__` and updated when the window width changes) and draw the single cached image to achieve a significant performance boost.
