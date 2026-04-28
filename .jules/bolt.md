@@ -23,3 +23,6 @@
 ## 2024-05-24 - [Tiling Optimization]
 **Learning:** Tiling an image across the screen using a loop of `painter.drawPixmap` calls inside a PyQt `paintEvent` or `draw` loop is highly inefficient.
 **Action:** Pre-render the tiled pattern onto a single, full-width `QPixmap` (e.g., initialized during `__init__` and updated when the window width changes) and draw the single cached image to achieve a significant performance boost.
+## 2024-05-01 - [Avoid eager evaluation in dict.get for costly functions]
+**Learning:** In Python, using `dict.get(key, expensive_function())` forces the `expensive_function()` to execute eagerly, even when `key` already exists in the dictionary. When applied to calculating static bounding rects like `painter.fontMetrics().boundingRect` inside a PyQt `paintEvent`, it negates caching entirely.
+**Action:** Use an `if key not in dict:` block to compute and cache expensive operations lazily instead of relying on `dict.get()` with default function calls.

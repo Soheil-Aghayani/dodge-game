@@ -370,7 +370,9 @@ class GameWidget(QWidget):
             }.get(abnormal_type, 'abnormal state')
             painter.setPen(self.cached_color_warning)
             painter.setFont(self.cached_font_28_bold)
-            text_rect = self.cached_warning_rects.get(warning_text, painter.fontMetrics().boundingRect(warning_text))
+            if warning_text not in self.cached_warning_rects:
+                self.cached_warning_rects[warning_text] = painter.fontMetrics().boundingRect(warning_text)
+            text_rect = self.cached_warning_rects[warning_text]
             x = (self.width() - text_rect.width()) // 2
             y = 60
             painter.drawText(x, y, warning_text)
