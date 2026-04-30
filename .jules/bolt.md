@@ -26,3 +26,6 @@
 ## 2024-05-01 - [Avoid eager evaluation in dict.get for costly functions]
 **Learning:** In Python, using `dict.get(key, expensive_function())` forces the `expensive_function()` to execute eagerly, even when `key` already exists in the dictionary. When applied to calculating static bounding rects like `painter.fontMetrics().boundingRect` inside a PyQt `paintEvent`, it negates caching entirely.
 **Action:** Use an `if key not in dict:` block to compute and cache expensive operations lazily instead of relying on `dict.get()` with default function calls.
+## 2024-08-05 - [Avoid Inline Dictionary Instantiation in Render Loops]
+**Learning:** Avoid inline dictionary definitions (e.g. `{...}.get(key)`) inside highly-called functions like `paintEvent` or `draw` methods, as recreating the dictionary every frame causes unnecessary garbage collection and memory overhead.
+**Action:** Pre-initialize such static mappings as class attributes in `__init__` and reference them dynamically inside the rendering functions.

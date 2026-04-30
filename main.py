@@ -142,6 +142,15 @@ class GameWidget(QWidget):
             'random blocks': metrics_28_bold.boundingRect('random blocks')
         }
 
+        # ⚡ BOLT OPTIMIZATION: Cache dynamically calculated text bounding rects
+        # and warning map to prevent recreating them on every render frame
+        self.cached_dynamic_text_rects = {}
+        self.warning_texts = {
+            'reverse_floor': 'reverse floor',
+            'reverse_control': 'reverse control',
+            'random_blocks': 'random blocks'
+        }
+
         self.abnormal_manager = AbnormalManager()
         self.glitch_timer = 0
         self.pending_abnormal_type = None
@@ -339,7 +348,9 @@ class GameWidget(QWidget):
             # Draw Score with KarenFat font
             painter.setFont(self.cached_font_32)
             score_text = f"Score: {self.score}"
-            text_rect = painter.fontMetrics().boundingRect(score_text)
+            if score_text not in self.cached_dynamic_text_rects:
+                self.cached_dynamic_text_rects[score_text] = painter.fontMetrics().boundingRect(score_text)
+            text_rect = self.cached_dynamic_text_rects[score_text]
             x = (self.width() - text_rect.width()) // 2
             y += text_rect.height() + 20
             painter.drawText(x, y, score_text)
@@ -355,7 +366,9 @@ class GameWidget(QWidget):
             # Draw High Score
             painter.setFont(self.cached_font_22)
             hs_text = f"High Score: {self.high_score}"
-            text_rect = painter.fontMetrics().boundingRect(hs_text)
+            if hs_text not in self.cached_dynamic_text_rects:
+                self.cached_dynamic_text_rects[hs_text] = painter.fontMetrics().boundingRect(hs_text)
+            text_rect = self.cached_dynamic_text_rects[hs_text]
             x = (self.width() - text_rect.width()) // 2
             y += text_rect.height() + 20
             painter.drawText(x, y, hs_text)
@@ -363,11 +376,7 @@ class GameWidget(QWidget):
         # Draw abnormal warning if active
         if self.abnormal_manager.is_active():
             abnormal_type = self.abnormal_manager.get_type()
-            warning_text = {
-                'reverse_floor': 'reverse floor',
-                'reverse_control': 'reverse control',
-                'random_blocks': 'random blocks'
-            }.get(abnormal_type, 'abnormal state')
+            warning_text = self.warning_texts.get(abnormal_type, 'abnormal state')
             painter.setPen(self.cached_color_warning)
             painter.setFont(self.cached_font_28_bold)
             if warning_text not in self.cached_warning_rects:
