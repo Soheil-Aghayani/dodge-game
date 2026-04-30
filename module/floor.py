@@ -12,15 +12,16 @@ class Floor:
         self.image = QPixmap(image_path)
         if self.image.isNull():
             print("Error: Could not load floor.png")
+            self._cached_img_height = 0
         else:
             self.image = self.image.scaled(50, 20, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+            self._cached_img_height = self.image.height()
 
         self._cached_width = 0
         self._cached_floor = None
         
     def get_height(self):
-        height = self.image.height() if not self.image.isNull() else 0
-        return height
+        return self._cached_img_height
         
     def get_y_position(self):
         y_pos = self.game_widget.height() - self.get_height()

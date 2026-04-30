@@ -58,9 +58,10 @@ class Block:
                     scale = min(target_w / img.width(), target_h / img.height())
                     new_w = int(img.width() * scale)
                     new_h = int(img.height() * scale)
-                    Block.scaled_obstacle_images[type_name] = img.scaled(
+                    scaled_img = img.scaled(
                         new_w, new_h, Qt.IgnoreAspectRatio, Qt.SmoothTransformation
                     )
+                    Block.scaled_obstacle_images[type_name] = (scaled_img, new_w, new_h)
         
         # Randomly select an image with weights
         weights = {
@@ -70,6 +71,8 @@ class Block:
         }
         self.image_type = random.choices(list(weights.keys()), list(weights.values()))[0]
         self.image = Block.obstacle_images.get(self.image_type)
+        self.img_w = self.image.width() if self.image else 0
+        self.img_h = self.image.height() if self.image else 0
         
         # Set animation properties based on image type
         if self.image_type == "barrel":
@@ -174,15 +177,15 @@ class Block:
             
         # Optimization: Use pre-scaled image for static blocks to avoid expensive resizing every frame
         if self.image_type in Block.scaled_obstacle_images:
-            scaled_img = Block.scaled_obstacle_images[self.image_type]
-            x = self.x + (self.width - scaled_img.width()) // 2
-            y = self.y + (self.height - scaled_img.height()) // 2
+            scaled_img, scaled_w, scaled_h = Block.scaled_obstacle_images[self.image_type]
+            x = self.x + (self.width - scaled_w) // 2
+            y = self.y + (self.height - scaled_h) // 2
             painter.drawPixmap(int(x), int(y), scaled_img)
             return
 
         if self.image:
-            img_w = self.image.width()
-            img_h = self.image.height()
+            img_w = self.img_w
+            img_h = self.img_h
             block_w = self.width
             block_h = self.height
             scale_pulse = 1.0

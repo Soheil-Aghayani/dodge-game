@@ -235,11 +235,12 @@ class GameWidget(QWidget):
             self.last_movement_time = current_time
             
         # Update blocks
+        player_rect = self.player.get_rect()
         for block in self.blocks[:]:
             if block.update():  # Block reached bottom
                 self.blocks.remove(block)
                 self.score += 1
-            elif block.check_collision(self.player.get_rect()):
+            elif block.check_collision(player_rect):
                 if self.health_system.take_damage():  # Only process collision if damage was dealt
                     self.sound_manager.play_collision()
                     if self.health_system.is_game_over():
