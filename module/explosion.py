@@ -14,9 +14,15 @@ class ExplosionAnimation(Animation):
         # ⚡ Bolt: Pre-scale frames to optimize rendering loop
         self.scaled_frames = []
         scaled_size = int(self.size * 2.5)
+        self.scaled_frame_width = 0
+        self.scaled_frame_height = 0
         for frame in self.frames:
             if frame:
-                self.scaled_frames.append(frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation))
+                scaled_frame = frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+                self.scaled_frames.append(scaled_frame)
+                if self.scaled_frame_width == 0:
+                    self.scaled_frame_width = scaled_frame.width()
+                    self.scaled_frame_height = scaled_frame.height()
             else:
                 self.scaled_frames.append(None)
 
@@ -39,7 +45,7 @@ class ExplosionAnimation(Animation):
         scaled_frame = self.scaled_frames[self.current_frame]
         if scaled_frame:
             # Center the explosion on the block's position
-            x = self.x + (self.size - scaled_frame.width()) // 2
-            y = self.y + (self.size - scaled_frame.height()) // 2
+            x = self.x + (self.size - self.scaled_frame_width) // 2
+            y = self.y + (self.size - self.scaled_frame_height) // 2
             
             painter.drawPixmap(int(x), int(y), scaled_frame) 

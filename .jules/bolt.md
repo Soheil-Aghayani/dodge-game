@@ -29,3 +29,6 @@
 ## 2024-08-05 - [Avoid Inline Dictionary Instantiation in Render Loops]
 **Learning:** Avoid inline dictionary definitions (e.g. `{...}.get(key)`) inside highly-called functions like `paintEvent` or `draw` methods, as recreating the dictionary every frame causes unnecessary garbage collection and memory overhead.
 **Action:** Pre-initialize such static mappings as class attributes in `__init__` and reference them dynamically inside the rendering functions.
+## 2024-11-20 - [Avoid redundant property lookups and C++ crossings in hot loops]
+**Learning:** In PyQt game loops, repeatedly invoking C++ properties or methods (like `.width()`, `.height()`, or `.get_rect()`) and re-calculating identical bounding areas inside high-frequency `paintEvent` or `update_game` loops causes notable performance overhead due to the continuous Python-to-C++ boundary crossings.
+**Action:** Always pre-cache structural dimension values (`img.width()`, `img.height()`) in `__init__` when they remain constant. Furthermore, pull loop-invariant calculations (such as evaluating the player's bounding rect before checking collisions against all blocks) completely outside the iteration scope.
