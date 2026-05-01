@@ -236,8 +236,13 @@ class GameWidget(QWidget):
             
         # Update blocks
         player_rect = self.player.get_rect()
+        # Pre-calculate loop invariants to avoid repeated C++ property lookups and evaluations
+        is_random_blocks = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'random_blocks'
+        game_width = self.width()
+        floor_y = self.floor.get_y_position()
+
         for block in self.blocks[:]:
-            if block.update():  # Block reached bottom
+            if block.update(is_random_blocks, game_width, floor_y):  # Block reached bottom
                 self.blocks.remove(block)
                 self.score += 1
             elif block.check_collision(player_rect):
@@ -296,9 +301,11 @@ class GameWidget(QWidget):
         
         # Glitch effect
         if self.glitch_timer > 0:
+            w_width = self.width()
+            w_height = self.height()
             for _ in range(20):
-                x = random.randint(0, self.width())
-                y = random.randint(0, self.height())
+                x = random.randint(0, w_width)
+                y = random.randint(0, w_height)
                 w = random.randint(10, 80)
                 h = random.randint(5, 30)
                 color = QColor(random.randint(180,255), random.randint(0,80), random.randint(0,80), 180)

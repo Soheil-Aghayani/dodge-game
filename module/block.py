@@ -81,7 +81,7 @@ class Block:
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
             
-    def update(self):
+    def update(self, is_random_blocks=None, game_width=None, floor_y=None):
         if self.explosion and not self.explosion.is_finished:
             current_time = QTime.currentTime().msecsSinceStartOfDay()
             self.explosion.update(current_time)
@@ -97,8 +97,16 @@ class Block:
             
         self.y += self.fall_speed
         
+        # Determine fallback values if None are provided
+        if is_random_blocks is None:
+            is_random_blocks = self.game_widget.abnormal_manager.is_active() and self.game_widget.abnormal_manager.get_type() == 'random_blocks'
+        if game_width is None:
+            game_width = self.game_widget.width()
+        if floor_y is None:
+            floor_y = self.game_widget.floor.get_y_position()
+
         # Handle random movement if random_blocks is active
-        if self.game_widget.abnormal_manager.is_active() and self.game_widget.abnormal_manager.get_type() == 'random_blocks':
+        if is_random_blocks:
             # Update horizontal position
             self.x += self.horizontal_speed
             
@@ -106,8 +114,8 @@ class Block:
             if self.x <= 0:
                 self.x = 0
                 self.horizontal_speed = abs(self.horizontal_speed)  # Move right
-            elif self.x >= self.game_widget.width() - self.width:
-                self.x = self.game_widget.width() - self.width
+            elif self.x >= game_width - self.width:
+                self.x = game_width - self.width
                 self.horizontal_speed = -abs(self.horizontal_speed)  # Move left
             
             # Randomly change direction
@@ -123,7 +131,7 @@ class Block:
             self.pulse_time += 0.1
             
         # Check if block has hit the floor
-        if self.y + self.height >= self.game_widget.floor.get_y_position():
+        if self.y + self.height >= floor_y:
             if self.should_pulse:  # If it's a barrel, explode
                 self.start_explosion()
                 return False
