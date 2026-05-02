@@ -145,6 +145,13 @@ class GameWidget(QWidget):
         # ⚡ BOLT OPTIMIZATION: Cache dynamically calculated text bounding rects
         # and warning map to prevent recreating them on every render frame
         self.cached_dynamic_text_rects = {}
+
+        # ⚡ BOLT OPTIMIZATION: Cache glitch colors to avoid QColor instantiation in paintEvent
+        self.cached_glitch_colors = [
+            QColor(random.randint(180, 255), random.randint(0, 80), random.randint(0, 80), 180)
+            for _ in range(50)
+        ]
+
         self.warning_texts = {
             'reverse_floor': 'reverse floor',
             'reverse_control': 'reverse control',
@@ -308,7 +315,7 @@ class GameWidget(QWidget):
                 y = random.randint(0, w_height)
                 w = random.randint(10, 80)
                 h = random.randint(5, 30)
-                color = QColor(random.randint(180,255), random.randint(0,80), random.randint(0,80), 180)
+                color = random.choice(self.cached_glitch_colors)
                 painter.fillRect(x, y, w, h, color)
             painter.translate(random.randint(-20, 20), random.randint(-20, 20))
         else:

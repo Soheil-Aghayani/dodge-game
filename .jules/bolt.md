@@ -35,3 +35,7 @@
 ## 2026-05-01 - [Pull loop-invariant C++ calls outside render loops]
 **Learning:** In PyQt game loops, repeatedly invoking C++ properties or methods (like `.width()`, `.height()`, or `.get_y_position()`) and calculating state inside high-frequency loops (like `update_game` iterating over `blocks` or glitch loops) causes notable performance overhead due to continuous Python-to-C++ boundary crossings.
 **Action:** Always pre-calculate loop-invariant values (like `self.width()`, `self.floor.get_y_position()`, and abnormal state queries) *before* entering inner iterative loops and pass them as arguments to update methods (like `Block.update()`) to minimize C++ boundary calls.
+
+## 2026-05-02 - [Pre-cache randomized UI primitives in render loops]
+**Learning:** Instantiating random UI primitives (like `QColor`) dynamically inside a high-frequency loop within `paintEvent` (e.g., glitch effects drawing 20 random color rects per frame) causes significant performance overhead due to repeated object creation and garbage collection.
+**Action:** Pre-compute a pool of randomized UI primitives (like a list of 50 random `QColor` objects) during initialization (e.g., in `__init__`) and use `random.choice()` from this cached pool during the render loop to achieve the same visual effect without the overhead of instantiation.
