@@ -122,14 +122,8 @@ class Player:
                    not self.is_dead:
                     self.shield.draw(painter)
                 
-                # Save the current painter state
-                painter.save()
-                
                 # The frame is already flipped if needed by the Animation class
                 painter.drawPixmap(int(self.x), int(self.y), frame)
-                
-                # Restore the painter state
-                painter.restore()
                     
     def get_rect(self):
         # If invincible, use shield hitbox

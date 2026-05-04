@@ -39,3 +39,6 @@
 ## 2026-05-02 - [Pre-cache randomized UI primitives in render loops]
 **Learning:** Instantiating random UI primitives (like `QColor`) dynamically inside a high-frequency loop within `paintEvent` (e.g., glitch effects drawing 20 random color rects per frame) causes significant performance overhead due to repeated object creation and garbage collection.
 **Action:** Pre-compute a pool of randomized UI primitives (like a list of 50 random `QColor` objects) during initialization (e.g., in `__init__`) and use `random.choice()` from this cached pool during the render loop to achieve the same visual effect without the overhead of instantiation.
+## 2024-11-21 - [Avoid redundant QPainter state save/restore]
+**Learning:** Calling `painter.save()` and `painter.restore()` in high-frequency PyQt render loops introduces unnecessary overhead by pushing and popping the C++ state matrix. If a draw method only executes non-mutating operations like `painter.drawPixmap()`, these state preservation calls are completely redundant.
+**Action:** Remove `painter.save()` and `painter.restore()` around simple draw operations to reduce C++ boundary overhead and improve rendering performance.
