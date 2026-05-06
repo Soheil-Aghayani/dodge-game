@@ -127,22 +127,27 @@ class PauseScreen(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
+        # Pre-calculate loop-invariant values to avoid redundant C++ boundary crossings
+        w_width = self.width()
+        w_height = self.height()
+        w_rect = self.rect()
+
         # Draw background image in cover mode
         if self._scaled_background and not self._scaled_background.isNull():
             # Center the scaled pixmap
-            x = (self._scaled_background.width() - self.width()) // 2
-            y = (self._scaled_background.height() - self.height()) // 2
-            painter.drawPixmap(0, 0, self._scaled_background, x, y, self.width(), self.height())
+            x = (self._scaled_background.width() - w_width) // 2
+            y = (self._scaled_background.height() - w_height) // 2
+            painter.drawPixmap(0, 0, self._scaled_background, x, y, w_width, w_height)
         else:
             print("Warning: Background image is null")
         
         # Draw semi-transparent overlay
-        painter.fillRect(self.rect(), self._cached_overlay_color)
+        painter.fillRect(w_rect, self._cached_overlay_color)
         
         # Draw "PAUSED" text with custom font
         painter.setPen(self._cached_text_color)
         painter.setFont(self._cached_font)
-        x = (self.width() - self._cached_text_rect.width()) // 2
+        x = (w_width - self._cached_text_rect.width()) // 2
         y = 150
         painter.drawText(x, y, "PAUSED")
             
