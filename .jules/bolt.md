@@ -42,3 +42,6 @@
 ## 2024-11-21 - [Avoid redundant QPainter state save/restore]
 **Learning:** Calling `painter.save()` and `painter.restore()` in high-frequency PyQt render loops introduces unnecessary overhead by pushing and popping the C++ state matrix. If a draw method only executes non-mutating operations like `painter.drawPixmap()`, these state preservation calls are completely redundant.
 **Action:** Remove `painter.save()` and `painter.restore()` around simple draw operations to reduce C++ boundary overhead and improve rendering performance.
+## 2024-11-21 - [Pre-cache dynamic properties in paintEvent]
+**Learning:** In PyQt5, repeatedly calling instance properties like `self.width()`, `self.height()`, and `self.rect()` inside the rendering function (especially inside loops, such as glitch effects) results in thousands of redundant Python-to-C++ boundary crossings per second.
+**Action:** Always fetch loop-invariant structural properties into local Python variables at the very top of `paintEvent()` or `draw()` (e.g., `w = self.width()`) and use those local variables throughout the function to avoid boundary overhead.

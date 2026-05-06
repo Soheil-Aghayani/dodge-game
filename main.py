@@ -306,10 +306,15 @@ class GameWidget(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         
+        # Pre-calculate loop-invariant values to avoid redundant C++ boundary crossings
+        w_width = self.width()
+        w_height = self.height()
+        w_rect = self.rect()
+        abnormal_active = self.abnormal_manager.is_active()
+        abnormal_type = self.abnormal_manager.get_type() if abnormal_active else None
+
         # Glitch effect
         if self.glitch_timer > 0:
-            w_width = self.width()
-            w_height = self.height()
             for _ in range(20):
                 x = random.randint(0, w_width)
                 y = random.randint(0, w_height)
@@ -320,10 +325,10 @@ class GameWidget(QWidget):
             painter.translate(random.randint(-20, 20), random.randint(-20, 20))
         else:
             # Flip the whole game if reverse_floor is active
-            reverse_floor = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'reverse_floor'
+            reverse_floor = abnormal_active and abnormal_type == 'reverse_floor'
             if reverse_floor:
                 painter.scale(1, -1)
-                painter.translate(0, -self.height())
+                painter.translate(0, -w_height)
             if self.shake_offset != (0, 0):
                 painter.translate(*self.shake_offset)
         
@@ -351,13 +356,13 @@ class GameWidget(QWidget):
         # Draw death screen overlay
         if self.show_death_screen:
             # Semi-transparent black overlay
-            painter.fillRect(self.rect(), self.cached_color_overlay)
+            painter.fillRect(w_rect, self.cached_color_overlay)
             
             # Draw Game Over text with KarenFat font
             painter.setPen(self.cached_color_white)
             painter.setFont(self.cached_font_48)
-            x = (self.width() - self.cached_rect_game_over.width()) // 2
-            y = (self.height() - self.cached_rect_game_over.height()) // 2 - 40
+            x = (w_width - self.cached_rect_game_over.width()) // 2
+            y = (w_height - self.cached_rect_game_over.height()) // 2 - 40
             painter.drawText(x, y, "Game Over!")
             
             # Draw Score with KarenFat font
@@ -366,7 +371,7 @@ class GameWidget(QWidget):
             if score_text not in self.cached_dynamic_text_rects:
                 self.cached_dynamic_text_rects[score_text] = painter.fontMetrics().boundingRect(score_text)
             text_rect = self.cached_dynamic_text_rects[score_text]
-            x = (self.width() - text_rect.width()) // 2
+            x = (w_width - text_rect.width()) // 2
             y += text_rect.height() + 20
             painter.drawText(x, y, score_text)
             
@@ -374,7 +379,7 @@ class GameWidget(QWidget):
             painter.setFont(self.cached_font_22)
             restart_text = "Press R to restart"
             text_rect = self.cached_rect_restart
-            x = (self.width() - text_rect.width()) // 2
+            x = (w_width - text_rect.width()) // 2
             y += text_rect.height() + 30
             painter.drawText(x, y, restart_text)
             
@@ -384,20 +389,19 @@ class GameWidget(QWidget):
             if hs_text not in self.cached_dynamic_text_rects:
                 self.cached_dynamic_text_rects[hs_text] = painter.fontMetrics().boundingRect(hs_text)
             text_rect = self.cached_dynamic_text_rects[hs_text]
-            x = (self.width() - text_rect.width()) // 2
+            x = (w_width - text_rect.width()) // 2
             y += text_rect.height() + 20
             painter.drawText(x, y, hs_text)
         
         # Draw abnormal warning if active
-        if self.abnormal_manager.is_active():
-            abnormal_type = self.abnormal_manager.get_type()
+        if abnormal_active:
             warning_text = self.warning_texts.get(abnormal_type, 'abnormal state')
             painter.setPen(self.cached_color_warning)
             painter.setFont(self.cached_font_28_bold)
             if warning_text not in self.cached_warning_rects:
                 self.cached_warning_rects[warning_text] = painter.fontMetrics().boundingRect(warning_text)
             text_rect = self.cached_warning_rects[warning_text]
-            x = (self.width() - text_rect.width()) // 2
+            x = (w_width - text_rect.width()) // 2
             y = 60
             painter.drawText(x, y, warning_text)
         
