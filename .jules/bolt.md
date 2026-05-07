@@ -45,3 +45,6 @@
 ## 2024-11-21 - [Pre-cache dynamic properties in paintEvent]
 **Learning:** In PyQt5, repeatedly calling instance properties like `self.width()`, `self.height()`, and `self.rect()` inside the rendering function (especially inside loops, such as glitch effects) results in thousands of redundant Python-to-C++ boundary crossings per second.
 **Action:** Always fetch loop-invariant structural properties into local Python variables at the very top of `paintEvent()` or `draw()` (e.g., `w = self.width()`) and use those local variables throughout the function to avoid boundary overhead.
+## 2024-11-21 - [Avoid redundant object creation and inline imports in render loops]
+**Learning:** Instantiating `QColor` (e.g., `QColor(255, 0, 0)`) or dynamically importing modules (`from PyQt5.QtGui import QColor`) inside a `draw()` or `paintEvent()` loop adds unnecessary garbage collection and module-resolution overhead that triggers per-frame for every object drawn.
+**Action:** Move all UI object instantiations to `__init__` or as class variables to cache them, and ensure all imports reside at the top of the file.

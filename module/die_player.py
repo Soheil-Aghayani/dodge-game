@@ -11,6 +11,7 @@ class DiePlayer(Animation):
         self.fall_speed = 0  # Initial fall speed
         self.fall_acceleration = 0.5  # Gravity effect
         self.y_offset = 0  # Track vertical position during fall
+        self.transparent_color = QColor(0, 0, 0, 0)
         
     def update(self, delta_time):
         if self.is_finished:
@@ -32,7 +33,7 @@ class DiePlayer(Animation):
         if frame and self.opacity < 1.0:
             # Create a copy of the frame for opacity modification
             temp = QPixmap(frame.size())
-            temp.fill(QColor(0, 0, 0, 0))  # Transparent background
+            temp.fill(self.transparent_color)  # Transparent background
             painter = QPainter(temp)
             painter.setOpacity(self.opacity)
             painter.drawPixmap(0, 0, frame)
