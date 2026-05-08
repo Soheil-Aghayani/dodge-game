@@ -45,3 +45,6 @@
 ## 2024-11-21 - [Pre-cache dynamic properties in paintEvent]
 **Learning:** In PyQt5, repeatedly calling instance properties like `self.width()`, `self.height()`, and `self.rect()` inside the rendering function (especially inside loops, such as glitch effects) results in thousands of redundant Python-to-C++ boundary crossings per second.
 **Action:** Always fetch loop-invariant structural properties into local Python variables at the very top of `paintEvent()` or `draw()` (e.g., `w = self.width()`) and use those local variables throughout the function to avoid boundary overhead.
+## 2024-11-23 - [Cache Class-level QPixmaps to avoid redundant file I/O]
+**Learning:** Instantiating new objects (e.g., Explosions) that internally load files from disk and apply transformations to `QPixmap` on `__init__` creates severe CPU/IO bottlenecks during intensive game loop events.
+**Action:** Use a class-level global cache (e.g., `_global_frame_cache` or `_cached_scaled_frames_by_size`) to load and transform `QPixmaps` only once per asset/size. Fetch directly from the cache on subsequent initializations.
