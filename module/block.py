@@ -2,12 +2,13 @@ import random
 import os
 import math
 from PyQt5.QtCore import QRect, QTime, Qt
-from PyQt5.QtGui import QPixmap, QPainter
+from PyQt5.QtGui import QPixmap, QPainter, QColor
 from module.explosion import ExplosionAnimation
 
 class Block:
     obstacle_images = {}
     scaled_obstacle_images = {}
+    fallback_color = None
     
     def __init__(self, game_widget):
         self.game_widget = game_widget
@@ -226,8 +227,9 @@ class Block:
             else:
                 painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
         else:
-            from PyQt5.QtGui import QColor
-            painter.setBrush(QColor(255, 0, 0))
+            if Block.fallback_color is None:
+                Block.fallback_color = QColor(255, 0, 0)
+            painter.setBrush(Block.fallback_color)
             painter.drawRect(self.get_rect())
             
     def check_collision(self, player_rect):
