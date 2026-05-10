@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QRect
-from PyQt5.QtGui import QPixmap, QTransform
+from PyQt5.QtGui import QPixmap, QTransform, QPainter
 import os
 from PyQt5.Qt import Qt
 
@@ -15,10 +15,18 @@ class Shield:
         self.width = int(player.width * 1.5)
         self.height = int(player.height * 1.5)
 
-        # ⚡ Bolt: Pre-scale image to optimize rendering loop
+        # ⚡ Bolt: Pre-scale image and apply opacity to optimize rendering loop
         if not self.image.isNull():
-            self.scaled_image = self.image.scaled(self.width, self.height,
+            scaled = self.image.scaled(self.width, self.height,
                 Qt.KeepAspectRatio, Qt.FastTransformation)
+
+            # Pre-render the opacity into the image to avoid expensive painter.setOpacity calls in draw loop
+            self.scaled_image = QPixmap(scaled.size())
+            self.scaled_image.fill(Qt.transparent)
+            painter = QPainter(self.scaled_image)
+            painter.setOpacity(0.7)
+            painter.drawPixmap(0, 0, scaled)
+            painter.end()
         else:
             self.scaled_image = QPixmap()
             
@@ -42,10 +50,8 @@ class Shield:
                 x_offset = (self.width - self.player.width) // 2
                 y_offset = (self.height - self.player.height) // 2
                 
-                painter.setOpacity(0.7)  # Make shield semi-transparent
                 painter.drawPixmap(
                     int(self.player.x - x_offset),
                     int(self.player.y - y_offset),
                     self.scaled_image
                 )
-                painter.setOpacity(1.0)  # Reset opacity
