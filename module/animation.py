@@ -4,6 +4,8 @@ import os
 import math
 
 class Animation:
+    _global_frame_cache = {}
+
     def __init__(self, folder_name, frame_count, frame_delay=100):
         self.frames = []
         self.flipped_frames = []
@@ -13,6 +15,11 @@ class Animation:
         self.time_accumulated = 0
         self.idle_offset = 0  # For idle animation vertical movement
         
+        # Check cache first
+        if folder_name in Animation._global_frame_cache:
+            self.frames, self.flipped_frames = Animation._global_frame_cache[folder_name]
+            return
+
         # Load frames
         current_dir = os.path.dirname(os.path.abspath(__file__))
         flip_transform = QTransform().scale(-1, 1)
@@ -27,6 +34,9 @@ class Animation:
                 self.frames.append(frame)
                 self.flipped_frames.append(frame.transformed(flip_transform, Qt.FastTransformation))
                 
+        # Cache for future use
+        Animation._global_frame_cache[folder_name] = (self.frames, self.flipped_frames)
+
     def update(self, delta_time):
         self.time_accumulated += delta_time
         if self.time_accumulated >= self.frame_delay:

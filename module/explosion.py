@@ -3,6 +3,8 @@ from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtCore import Qt
 
 class ExplosionAnimation(Animation):
+    _cached_scaled_frames_by_size = {}
+
     def __init__(self, x, y, size):
         super().__init__("explosion", 8, 100)  # Changed from 50ms to 100ms delay
         self.x = x
@@ -12,8 +14,14 @@ class ExplosionAnimation(Animation):
         self.current_frame = 0
         
         # ⚡ Bolt: Pre-scale frames to optimize rendering loop
-        self.scaled_frames = []
         scaled_size = int(self.size * 2.5)
+
+        # Check cache first
+        if scaled_size in ExplosionAnimation._cached_scaled_frames_by_size:
+            self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height = ExplosionAnimation._cached_scaled_frames_by_size[scaled_size]
+            return
+
+        self.scaled_frames = []
         self.scaled_frame_width = 0
         self.scaled_frame_height = 0
         for frame in self.frames:
@@ -25,6 +33,9 @@ class ExplosionAnimation(Animation):
                     self.scaled_frame_height = scaled_frame.height()
             else:
                 self.scaled_frames.append(None)
+
+        # Cache for future use
+        ExplosionAnimation._cached_scaled_frames_by_size[scaled_size] = (self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height)
 
     def update(self, delta_time):
         if self.is_finished:

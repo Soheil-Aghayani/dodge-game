@@ -48,3 +48,6 @@
 ## 2024-11-21 - [Avoid redundant object creation and inline imports in render loops]
 **Learning:** Instantiating `QColor` (e.g., `QColor(255, 0, 0)`) or dynamically importing modules (`from PyQt5.QtGui import QColor`) inside a `draw()` or `paintEvent()` loop adds unnecessary garbage collection and module-resolution overhead that triggers per-frame for every object drawn.
 **Action:** Move all UI object instantiations to `__init__` or as class variables to cache them, and ensure all imports reside at the top of the file.
+## 2024-11-21 - [Pre-cache Animation Frames globally]
+**Learning:** Loading and pre-scaling identical animation frames from disk for every newly spawned entity (like `ExplosionAnimation` or `Player`) introduces unnecessary I/O blocking and memory overhead.
+**Action:** Use a class-level dictionary (`_global_frame_cache` for base animation frames, or `_cached_scaled_frames_by_size` for size-specific derived frames) keyed by logical attributes (like folder name or scaled dimensions) to store processed `QPixmap` arrays so they can be reused instantaneously across multiple instances.
