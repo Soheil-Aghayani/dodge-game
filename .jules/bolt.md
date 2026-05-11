@@ -54,3 +54,6 @@
 ## 2024-11-21 - [Pre-render Opacity in QPixmaps]
 **Learning:** In PyQt game loops, modifying `QPainter` opacity dynamically per frame (e.g., `painter.setOpacity(0.7)`) is computationally expensive (~20% slower in benchmarks).
 **Action:** When drawing semi-transparent, static images (like a player shield), pre-render the opacity into a cached `QPixmap` during initialization by creating a transparent canvas and drawing the image onto it with the desired opacity, thereby avoiding dynamic opacity changes in the high-frequency `draw` or `paintEvent` loops.
+## 2024-11-21 - [Optimize List Iteration and Deletion in Game Loops]
+**Learning:** In high-frequency game loops (e.g., `update_game`), iterating over a shallow copy of a list (`for block in self.blocks[:]:`) and using `.remove(block)` introduces significant overhead due to $O(N)$ allocation for the copy and $O(N)$ search time per removal.
+**Action:** Iterate backwards using `range(len(self.blocks) - 1, -1, -1)` and safely remove elements using `.pop(i)`. This avoids the shallow copy allocation and avoids the initial search overhead.
