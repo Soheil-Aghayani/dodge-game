@@ -1,7 +1,8 @@
 import random
 import os
 import math
-from PyQt5.QtCore import QRect, QTime, Qt
+import time
+from PyQt5.QtCore import QRect, Qt
 from PyQt5.QtGui import QPixmap, QPainter, QColor
 from module.explosion import ExplosionAnimation
 
@@ -84,7 +85,7 @@ class Block:
             
     def update(self, is_random_blocks=None, game_width=None, floor_y=None):
         if self.explosion and not self.explosion.is_finished:
-            current_time = QTime.currentTime().msecsSinceStartOfDay()
+            current_time = int(time.time() * 1000)
             self.explosion.update(current_time)
             return False
             

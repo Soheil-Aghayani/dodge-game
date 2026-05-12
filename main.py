@@ -1,8 +1,9 @@
 import sys
+import time
 import os
 import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QMessageBox
-from PyQt5.QtCore import Qt, QTimer, QTime
+from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QFontDatabase
 from module.player import Player
 from module.block import Block
@@ -60,7 +61,7 @@ class GameWidget(QWidget):
         # Game state
         self.game_active = False
         self.score = 0
-        self.last_update = QTime.currentTime().msecsSinceStartOfDay()
+        self.last_update = int(time.time() * 1000)
         self.waiting_for_restart = False
         self.death_animation_timer = None
         self.show_death_screen = False
@@ -93,7 +94,7 @@ class GameWidget(QWidget):
         # Track pressed keys
         self.pressed_keys = set()
         self.last_footstep_time = 0
-        self.last_movement_time = QTime.currentTime().msecsSinceStartOfDay()
+        self.last_movement_time = int(time.time() * 1000)
         self.movement_delay = 8  # Reduced delay for more responsive movement (~125 FPS)
         
         # Load custom font for Game Over
@@ -197,7 +198,7 @@ class GameWidget(QWidget):
             self.blocks.append(Block(self))
             
     def update_game(self):
-        current_time = QTime.currentTime().msecsSinceStartOfDay()
+        current_time = int(time.time() * 1000)
         
         # Always update player animation, even when game is not active
         self.player.update(current_time)

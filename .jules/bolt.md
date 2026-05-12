@@ -57,3 +57,6 @@
 ## 2024-11-21 - [Optimize List Iteration and Deletion in Game Loops]
 **Learning:** In high-frequency game loops (e.g., `update_game`), iterating over a shallow copy of a list (`for block in self.blocks[:]:`) and using `.remove(block)` introduces significant overhead due to $O(N)$ allocation for the copy and $O(N)$ search time per removal.
 **Action:** Iterate backwards using `range(len(self.blocks) - 1, -1, -1)` and safely remove elements using `.pop(i)`. This avoids the shallow copy allocation and avoids the initial search overhead.
+## 2024-11-21 - [Replace QTime with time.time() in Game Loops]
+**Learning:** In PyQt game loops, repeatedly calling `QTime.currentTime().msecsSinceStartOfDay()` to calculate delta times causes significant performance overhead (~32x slower in benchmarks) due to the constant Python-to-C++ boundary crossings required to instantiate the `QTime` object.
+**Action:** Replace `QTime.currentTime().msecsSinceStartOfDay()` with Python's native `int(time.time() * 1000)` or `time.time_ns() // 1_000_000` to calculate timestamps and deltas directly in Python space, avoiding C++ boundary overhead entirely in high-frequency update loops.
