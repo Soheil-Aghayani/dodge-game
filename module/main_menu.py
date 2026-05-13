@@ -1,9 +1,10 @@
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QLabel
-from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint, QTime
+from PyQt5.QtCore import Qt, QTimer, QPropertyAnimation, QEasingCurve, QPoint
 from PyQt5.QtGui import QFont, QPainter, QColor, QLinearGradient, QPen, QFontDatabase
 from module.sound_manager import SoundManager
 from module.menu_background import MenuBackground
 import math
+import time
 import os
 
 class StyledButton(QPushButton):
@@ -139,7 +140,7 @@ class MainMenu(QWidget):
         
     def update_title_animation(self):
         # Update title position with reduced sine wave movement
-        self.title_y_offset = math.sin(QTime.currentTime().msecsSinceStartOfDay() / 300) * 5
+        self.title_y_offset = math.sin(int(time.time() * 1000) / 300) * 5
         self.title.move(self.title.x(), self.title.y() + int(self.title_y_offset))
         
     def resizeEvent(self, event):

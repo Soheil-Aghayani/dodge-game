@@ -1,4 +1,5 @@
-from PyQt5.QtCore import QRect, QTime
+import time
+from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QPainter, QTransform, QColor
 from module.idle_player import IdlePlayer
 from module.moving_player import MovingPlayer
@@ -31,10 +32,10 @@ class Player:
         self.is_dead = False
         self.facing_right = True  # For flipping the sprite
         self.movement_direction = 0  # -1 for left, 0 for none, 1 for right
-        self.last_movement_time = QTime.currentTime().msecsSinceStartOfDay()
+        self.last_movement_time = int(time.time() * 1000)
         self.movement_delay = 2  # Reduced delay for more responsive movement (~500 FPS)
         
-        self.last_update = QTime.currentTime().msecsSinceStartOfDay()
+        self.last_update = int(time.time() * 1000)
         
     def reset_position(self):
         if self.game_widget.height() > 0:
@@ -71,8 +72,6 @@ class Player:
         
     def update(self, current_time):
         delta_time = current_time - self.last_update
-        if delta_time < 0:  # Handle day rollover
-            delta_time += 24 * 60 * 60 * 1000  # Add 24 hours in milliseconds
         self.last_update = current_time
         
         # Update jump state
