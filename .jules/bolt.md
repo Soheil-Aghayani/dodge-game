@@ -60,3 +60,6 @@
 ## 2024-11-21 - [Replace QTime with time.time() in Game Loops]
 **Learning:** In PyQt game loops, repeatedly calling `QTime.currentTime().msecsSinceStartOfDay()` to calculate delta times causes significant performance overhead (~32x slower in benchmarks) due to the constant Python-to-C++ boundary crossings required to instantiate the `QTime` object.
 **Action:** Replace `QTime.currentTime().msecsSinceStartOfDay()` with Python's native `int(time.time() * 1000)` or `time.time_ns() // 1_000_000` to calculate timestamps and deltas directly in Python space, avoiding C++ boundary overhead entirely in high-frequency update loops.
+## 2026-05-13 - [Pass pre-calculated floor_y to avoid redundant C++ property lookups in Player update]
+**Learning:** In PyQt game loops, calling `self.game_widget.floor.get_y_position()` within nested update loops like `Player.update()` causes repeated Python-to-C++ boundary crossings when it could be calculated once at the start of `update_game`.
+**Action:** Extract loop-invariant evaluations like `floor_y` to the top of the update loop and pass them down to nested update functions as arguments to avoid C++ overhead.
