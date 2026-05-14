@@ -63,3 +63,6 @@
 ## 2026-05-13 - [Pass pre-calculated floor_y to avoid redundant C++ property lookups in Player update]
 **Learning:** In PyQt game loops, calling `self.game_widget.floor.get_y_position()` within nested update loops like `Player.update()` causes repeated Python-to-C++ boundary crossings when it could be calculated once at the start of `update_game`.
 **Action:** Extract loop-invariant evaluations like `floor_y` to the top of the update loop and pass them down to nested update functions as arguments to avoid C++ overhead.
+## 2026-05-14 - [Pre-cache dynamically rotated QPixmaps]
+**Learning:** In PyQt render loops, dynamically rotating images using `painter.rotate()` and `painter.translate()` every frame is a significant performance bottleneck (e.g. ~0.26s dynamically vs ~0.08s cached over 10k ops).
+**Action:** Pre-cache rotated variants of a `QPixmap` (e.g., all 180 angles for a rotating barrel) using `QTransform().rotate()` during initialization and render the cached image directly using `painter.drawPixmap` to avoid this overhead in hot loops.

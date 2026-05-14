@@ -3,10 +3,11 @@ import os
 import math
 import time
 from PyQt5.QtCore import QRect, Qt
-from PyQt5.QtGui import QPixmap, QPainter, QColor
+from PyQt5.QtGui import QPixmap, QPainter, QColor, QTransform
 from module.explosion import ExplosionAnimation
 
 class Block:
+    _cached_rotated_barrels = {}
     obstacle_images = {}
     scaled_obstacle_images = {}
     fallback_color = None
@@ -48,6 +49,14 @@ class Block:
             Block.obstacle_images["barrel"] = barrel_img.scaled(
                 int(barrel_img.width() * scale), int(barrel_img.height() * scale), Qt.IgnoreAspectRatio, Qt.SmoothTransformation
             )
+
+            # Pre-cache all 180 rotated states of the barrel to avoid expensive
+            # dynamic rotation during the render loop (Block.draw)
+            barrel_scaled = Block.obstacle_images["barrel"]
+            Block._cached_rotated_barrels = {}
+            for angle in range(0, 360, 2):
+                transform = QTransform().rotate(angle)
+                Block._cached_rotated_barrels[angle] = barrel_scaled.transformed(transform, Qt.SmoothTransformation)
 
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
@@ -206,25 +215,23 @@ class Block:
             new_h = int(img_h * scale)
             x = self.x + (block_w - new_w) // 2
             y = self.y + (block_h - new_h) // 2
-            if self.should_rotate:
-                painter.save()
-                # Use SmoothPixmapTransform for better quality rotation
-                painter.setRenderHint(QPainter.SmoothPixmapTransform, True)
+            if self.should_rotate and self.angle in Block._cached_rotated_barrels:
+                # ⚡ Bolt: Use pre-cached rotated image to bypass expensive C++ boundary calls
+                # (painter.save/restore, translate, rotate) in the hot render loop.
+                cached_img = Block._cached_rotated_barrels[self.angle]
+                # Scale the already-rotated cached image based on the pulse scale
+                rot_w = int(cached_img.width() * scale_pulse)
+                rot_h = int(cached_img.height() * scale_pulse)
 
-                # Move coordinate system to center of the block
-                center_x = x + new_w / 2
-                center_y = y + new_h / 2
-                painter.translate(center_x, center_y)
+                # Center point of the block
+                center_x = self.x + block_w / 2
+                center_y = self.y + block_h / 2
 
-                # Rotate
-                painter.rotate(self.angle)
+                # Draw from top-left offset to center
+                draw_x = int(center_x - rot_w / 2)
+                draw_y = int(center_y - rot_h / 2)
 
-                # Move back to top-left relative to center
-                painter.translate(-new_w / 2, -new_h / 2)
-
-                # Draw the image
-                painter.drawPixmap(0, 0, int(new_w), int(new_h), self.image)
-                painter.restore()
+                painter.drawPixmap(draw_x, draw_y, rot_w, rot_h, cached_img)
             else:
                 painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
         else:
