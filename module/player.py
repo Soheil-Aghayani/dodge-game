@@ -70,16 +70,20 @@ class Player:
             self.jump_animation.start_jump(self.y)
             self.current_animation = self.jump_animation
         
-    def update(self, current_time):
+    def update(self, current_time, floor_y=None):
         delta_time = current_time - self.last_update
         self.last_update = current_time
         
+        # Fetch floor_y once if not provided
+        if floor_y is None:
+            floor_y = self.game_widget.floor.get_y_position()
+
         # Update jump state
         if self.jump_animation.is_jumping:
             if self.jump_animation.update(delta_time):  # Jump complete
                 self.current_animation = self.idle_animation
                 self.jump_animation.is_jumping = False
-            self.y = self.game_widget.floor.get_y_position() - self.height + self.jump_animation.get_y_offset()
+            self.y = floor_y - self.height + self.jump_animation.get_y_offset()
         
         # Update position based on movement direction with consistent timing
         # Allow movement during jumps

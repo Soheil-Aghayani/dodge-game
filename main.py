@@ -200,8 +200,12 @@ class GameWidget(QWidget):
     def update_game(self):
         current_time = int(time.time() * 1000)
         
+        # Pre-calculate loop-invariant values for the entire update loop
+        game_width = self.width()
+        floor_y = self.floor.get_y_position()
+
         # Always update player animation, even when game is not active
-        self.player.update(current_time)
+        self.player.update(current_time, floor_y=floor_y)
         
         # Update abnormal state
         prev_active = self.abnormal_manager.is_active()
@@ -246,8 +250,6 @@ class GameWidget(QWidget):
         player_rect = self.player.get_rect()
         # Pre-calculate loop invariants to avoid repeated C++ property lookups and evaluations
         is_random_blocks = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'random_blocks'
-        game_width = self.width()
-        floor_y = self.floor.get_y_position()
 
         # ⚡ BOLT OPTIMIZATION: Iterate backwards and use pop(i) instead of shallow copy and remove() to avoid O(N) allocation and O(N) search overhead.
         for i in range(len(self.blocks) - 1, -1, -1):
@@ -339,7 +341,8 @@ class GameWidget(QWidget):
         self.background.draw(painter)
         
         # Draw floor
-        self.floor.draw(painter)
+        floor_y = w_height - self.floor.get_height()
+        self.floor.draw(painter, game_width=w_width, floor_y=floor_y)
         
         # Draw player
         self.player.draw(painter)

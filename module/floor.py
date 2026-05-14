@@ -27,9 +27,9 @@ class Floor:
         y_pos = self.game_widget.height() - self.get_height()
         return y_pos
         
-    def draw(self, painter):
+    def draw(self, painter, game_width=None, floor_y=None):
         if not self.image.isNull():
-            current_width = self.game_widget.width()
+            current_width = game_width if game_width is not None else self.game_widget.width()
             # ⚡ BOLT OPTIMIZATION:
             # Pre-render the tiled floor onto a single QPixmap when the window width changes.
             # Doing this avoids the expense of rendering the floor tile-by-tile on every single frame,
@@ -44,7 +44,8 @@ class Floor:
                     cache_painter.drawPixmap(x, 0, self.image)
                 cache_painter.end()
 
-            painter.drawPixmap(0, self.get_y_position(), self._cached_floor)
+            y_pos = floor_y if floor_y is not None else self.get_y_position()
+            painter.drawPixmap(0, y_pos, self._cached_floor)
         else:
             print("Cannot draw floor: Image is null")
                 
