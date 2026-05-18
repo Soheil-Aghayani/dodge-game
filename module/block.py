@@ -92,6 +92,15 @@ class Block:
             self.should_pulse = True
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
+
+        # Pre-calculate block collision geometry to avoid float math in check_collision loop
+        self.half_width = self.width // 2
+        self.half_height = self.height // 2
+        self.barrel_hitbox_reduction = int(self.width * 0.2)
+        self.barrel_hitbox_w = self.width - (self.barrel_hitbox_reduction * 2)
+        self.barrel_hitbox_h = self.height - (self.barrel_hitbox_reduction * 2)
+        self.explosion_size = int(self.width * 2.5)
+        self.explosion_offset = self.explosion_size // 2
             
     def update(self, is_random_blocks=None, game_width=None, floor_y=None):
         if self.explosion and not self.explosion.is_finished:
@@ -159,24 +168,21 @@ class Block:
         if self.image_type == "barrel":
             if self.is_exploding or (self.explosion and not self.explosion.is_finished):
                 # Make hitbox match the explosion animation size (2.5x)
-                extra = int(self.width * 0.75)  # This makes total size 2.5x original size
-                center_x = self.x + (self.width // 2)
-                center_y = self.y + (self.height // 2)
-                explosion_size = int(self.width * 2.5)
+                center_x = self.x + self.half_width
+                center_y = self.y + self.half_height
                 return (
-                    int(center_x - explosion_size // 2),
-                    int(center_y - explosion_size // 2),
-                    explosion_size,
-                    explosion_size
+                    int(center_x - self.explosion_offset),
+                    int(center_y - self.explosion_offset),
+                    self.explosion_size,
+                    self.explosion_size
                 )
             else:
                 # Smaller hitbox for normal barrel (80% of size)
-                reduction = int(self.width * 0.2)
                 return (
-                    int(self.x + reduction),
-                    int(self.y + reduction),
-                    self.width - (reduction * 2),
-                    self.height - (reduction * 2)
+                    int(self.x + self.barrel_hitbox_reduction),
+                    int(self.y + self.barrel_hitbox_reduction),
+                    self.barrel_hitbox_w,
+                    self.barrel_hitbox_h
                 )
         else:
             # Normal hitbox for other blocks

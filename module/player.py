@@ -16,6 +16,11 @@ class Player:
         self.speed = 6  # Increased speed for faster movement
         self.x = 0
         self.y = 0
+
+        # Pre-calculate player hitbox to avoid redundant math in get_rect
+        self.hitbox_width = int(self.width * 0.7)
+        self.hitbox_height = self.height
+        self.hitbox_x_offset = (self.width - self.hitbox_width) // 2
         
         # Initialize animations
         self.idle_animation = IdlePlayer()
@@ -135,10 +140,8 @@ class Player:
             return self.shield.get_rect()
             
         # Otherwise use normal player hitbox
-        hitbox_width = int(self.width * 0.7)
-        hitbox_height = self.height
-        hitbox_x = int(self.x + (self.width - hitbox_width) // 2)
-        return (hitbox_x, int(self.y), hitbox_width, hitbox_height)
+        hitbox_x = int(self.x) + self.hitbox_x_offset
+        return (hitbox_x, int(self.y), self.hitbox_width, self.hitbox_height)
             
     def die(self):
         if not self.is_dead:
