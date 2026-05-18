@@ -50,4 +50,4 @@ class Floor:
             print("Cannot draw floor: Image is null")
                 
     def get_rect(self):
-        return QRect(0, self.get_y_position(), self.game_widget.width(), self.get_height()) 
+        return (0, self.get_y_position(), self.game_widget.width(), self.get_height())

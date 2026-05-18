@@ -56,7 +56,8 @@ class Block:
             Block._cached_rotated_barrels = {}
             for angle in range(0, 360, 2):
                 transform = QTransform().rotate(angle)
-                Block._cached_rotated_barrels[angle] = barrel_scaled.transformed(transform, Qt.SmoothTransformation)
+                transformed_img = barrel_scaled.transformed(transform, Qt.SmoothTransformation)
+                Block._cached_rotated_barrels[angle] = (transformed_img, transformed_img.width(), transformed_img.height())
 
             # Pre-scale static images for performance optimization
             # This avoids resizing the image every frame in draw()
@@ -162,7 +163,7 @@ class Block:
                 center_x = self.x + (self.width // 2)
                 center_y = self.y + (self.height // 2)
                 explosion_size = int(self.width * 2.5)
-                return QRect(
+                return (
                     int(center_x - explosion_size // 2),
                     int(center_y - explosion_size // 2),
                     explosion_size,
@@ -171,7 +172,7 @@ class Block:
             else:
                 # Smaller hitbox for normal barrel (80% of size)
                 reduction = int(self.width * 0.2)
-                return QRect(
+                return (
                     int(self.x + reduction),
                     int(self.y + reduction),
                     self.width - (reduction * 2),
@@ -179,7 +180,7 @@ class Block:
                 )
         else:
             # Normal hitbox for other blocks
-            return QRect(
+            return (
                 int(self.x),
                 int(self.y),
                 self.width,
@@ -218,10 +219,10 @@ class Block:
             if self.should_rotate and self.angle in Block._cached_rotated_barrels:
                 # ⚡ Bolt: Use pre-cached rotated image to bypass expensive C++ boundary calls
                 # (painter.save/restore, translate, rotate) in the hot render loop.
-                cached_img = Block._cached_rotated_barrels[self.angle]
+                cached_img, cached_w, cached_h = Block._cached_rotated_barrels[self.angle]
                 # Scale the already-rotated cached image based on the pulse scale
-                rot_w = int(cached_img.width() * scale_pulse)
-                rot_h = int(cached_img.height() * scale_pulse)
+                rot_w = int(cached_w * scale_pulse)
+                rot_h = int(cached_h * scale_pulse)
 
                 # Center point of the block
                 center_x = self.x + block_w / 2
@@ -238,13 +239,17 @@ class Block:
             if Block.fallback_color is None:
                 Block.fallback_color = QColor(255, 0, 0)
             painter.setBrush(Block.fallback_color)
-            painter.drawRect(self.get_rect())
+            painter.drawRect(QRect(*self.get_rect()))
             
     def check_collision(self, player_rect):
-        # Only check collision if explosion animation is playing
-        if self.explosion and not self.explosion.is_finished:
-            return self.get_rect().intersects(player_rect)
-        # Check normal collision if not exploding
-        if not self.is_exploding:
-            return self.get_rect().intersects(player_rect)
-        return False 
+        # player_rect is now a tuple (x, y, w, h)
+        px, py, pw, ph = player_rect
+        rect = self.get_rect()
+        if not rect:
+            return False
+
+        bx, by, bw, bh = rect
+        # Check normal collision if not exploding, or if explosion animation is playing
+        if (self.explosion and not self.explosion.is_finished) or not self.is_exploding:
+            return not (px >= bx + bw or px + pw <= bx or py >= by + bh or py + ph <= by)
+        return False

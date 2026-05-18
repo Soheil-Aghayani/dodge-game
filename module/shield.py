@@ -34,7 +34,7 @@ class Shield:
         # Center the shield hitbox around the player
         x_offset = (self.width - self.player.width) // 2
         y_offset = (self.height - self.player.height) // 2
-        return QRect(
+        return (
             int(self.player.x - x_offset),
             int(self.player.y - y_offset),
             self.width,

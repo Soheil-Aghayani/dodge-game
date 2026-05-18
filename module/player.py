@@ -138,7 +138,7 @@ class Player:
         hitbox_width = int(self.width * 0.7)
         hitbox_height = self.height
         hitbox_x = int(self.x + (self.width - hitbox_width) // 2)
-        return QRect(hitbox_x, int(self.y), hitbox_width, hitbox_height)
+        return (hitbox_x, int(self.y), hitbox_width, hitbox_height)
             
     def die(self):
         if not self.is_dead:
