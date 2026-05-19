@@ -30,6 +30,11 @@ class Player:
         # Movement state
         self.is_moving = False
         self.is_dead = False
+
+        # Pre-calculated hitboxes
+        self.hitbox_width = int(self.width * 0.7)
+        self.hitbox_height = self.height
+        self.hitbox_offset_x = (self.width - self.hitbox_width) // 2
         self.facing_right = True  # For flipping the sprite
         self.movement_direction = 0  # -1 for left, 0 for none, 1 for right
         self.last_movement_time = int(time.time() * 1000)
@@ -135,10 +140,7 @@ class Player:
             return self.shield.get_rect()
             
         # Otherwise use normal player hitbox
-        hitbox_width = int(self.width * 0.7)
-        hitbox_height = self.height
-        hitbox_x = int(self.x + (self.width - hitbox_width) // 2)
-        return (hitbox_x, int(self.y), hitbox_width, hitbox_height)
+        return (int(self.x) + self.hitbox_offset_x, int(self.y), self.hitbox_width, self.hitbox_height)
             
     def die(self):
         if not self.is_dead:

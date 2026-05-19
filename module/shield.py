@@ -15,6 +15,9 @@ class Shield:
         self.width = int(player.width * 1.5)
         self.height = int(player.height * 1.5)
 
+        self.hitbox_offset_x = (self.width - self.player.width) // 2
+        self.hitbox_offset_y = (self.height - self.player.height) // 2
+
         # ⚡ Bolt: Pre-scale image and apply opacity to optimize rendering loop
         if not self.image.isNull():
             scaled = self.image.scaled(self.width, self.height,
@@ -32,11 +35,9 @@ class Shield:
             
     def get_rect(self):
         # Center the shield hitbox around the player
-        x_offset = (self.width - self.player.width) // 2
-        y_offset = (self.height - self.player.height) // 2
         return (
-            int(self.player.x - x_offset),
-            int(self.player.y - y_offset),
+            int(self.player.x) - self.hitbox_offset_x,
+            int(self.player.y) - self.hitbox_offset_y,
             self.width,
             self.height
         )
@@ -47,11 +48,8 @@ class Shield:
             if not hasattr(self.player.game_widget, 'health_system') or \
                self.player.game_widget.health_system.is_visible:
                 # Center shield around player
-                x_offset = (self.width - self.player.width) // 2
-                y_offset = (self.height - self.player.height) // 2
-                
                 painter.drawPixmap(
-                    int(self.player.x - x_offset),
-                    int(self.player.y - y_offset),
+                    int(self.player.x) - self.hitbox_offset_x,
+                    int(self.player.y) - self.hitbox_offset_y,
                     self.scaled_image
                 )
