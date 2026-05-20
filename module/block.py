@@ -97,7 +97,12 @@ class Block:
             self.hitbox_reduction = int(self.width * 0.2)
             self.reduced_width = self.width - (self.hitbox_reduction * 2)
             self.reduced_height = self.height - (self.hitbox_reduction * 2)
-            
+            self.explosion_offset = (self.width // 2) - (self.explosion_size // 2)
+
+        self.half_width = self.width / 2
+        self.half_height = self.height / 2
+        self.base_scale = min(self.width / self.img_w, self.height / self.img_h) if self.img_w and self.img_h else 1.0
+
     def update(self, is_random_blocks=None, game_width=None, floor_y=None):
         if self.explosion and not self.explosion.is_finished:
             current_time = int(time.time() * 1000)
@@ -164,11 +169,9 @@ class Block:
         if self.image_type == "barrel":
             if self.is_exploding or (self.explosion and not self.explosion.is_finished):
                 # Make hitbox match the explosion animation size (2.5x)
-                center_x = int(self.x) + (self.width // 2)
-                center_y = int(self.y) + (self.height // 2)
                 return (
-                    center_x - self.explosion_size // 2,
-                    center_y - self.explosion_size // 2,
+                    int(self.x) + self.explosion_offset,
+                    int(self.y) + self.explosion_offset,
                     self.explosion_size,
                     self.explosion_size
                 )
@@ -227,8 +230,8 @@ class Block:
                 rot_h = int(cached_h * scale_pulse)
 
                 # Center point of the block
-                center_x = self.x + block_w / 2
-                center_y = self.y + block_h / 2
+                center_x = self.x + self.half_width
+                center_y = self.y + self.half_height
 
                 # Draw from top-left offset to center
                 draw_x = int(center_x - rot_w / 2)

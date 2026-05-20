@@ -19,6 +19,8 @@ class ExplosionAnimation(Animation):
         # Check cache first
         if scaled_size in ExplosionAnimation._cached_scaled_frames_by_size:
             self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height = ExplosionAnimation._cached_scaled_frames_by_size[scaled_size]
+            self.offset_x = (self.size - self.scaled_frame_width) // 2
+            self.offset_y = (self.size - self.scaled_frame_height) // 2
             return
 
         self.scaled_frames = []
@@ -33,6 +35,9 @@ class ExplosionAnimation(Animation):
                     self.scaled_frame_height = scaled_frame.height()
             else:
                 self.scaled_frames.append(None)
+
+        self.offset_x = (self.size - self.scaled_frame_width) // 2
+        self.offset_y = (self.size - self.scaled_frame_height) // 2
 
         # Cache for future use
         ExplosionAnimation._cached_scaled_frames_by_size[scaled_size] = (self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height)
@@ -56,7 +61,7 @@ class ExplosionAnimation(Animation):
         scaled_frame = self.scaled_frames[self.current_frame]
         if scaled_frame:
             # Center the explosion on the block's position
-            x = self.x + (self.size - self.scaled_frame_width) // 2
-            y = self.y + (self.size - self.scaled_frame_height) // 2
+            x = self.x + self.offset_x
+            y = self.y + self.offset_y
             
             painter.drawPixmap(int(x), int(y), scaled_frame) 
