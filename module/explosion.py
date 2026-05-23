@@ -37,6 +37,10 @@ class ExplosionAnimation(Animation):
         # Cache for future use
         ExplosionAnimation._cached_scaled_frames_by_size[scaled_size] = (self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height)
 
+        # ⚡ Bolt Optimization: Pre-calculate drawing offsets to avoid division in render loop
+        self.draw_offset_x = (self.size - self.scaled_frame_width) // 2
+        self.draw_offset_y = (self.size - self.scaled_frame_height) // 2
+
     def update(self, delta_time):
         if self.is_finished:
             return
@@ -56,7 +60,8 @@ class ExplosionAnimation(Animation):
         scaled_frame = self.scaled_frames[self.current_frame]
         if scaled_frame:
             # Center the explosion on the block's position
-            x = self.x + (self.size - self.scaled_frame_width) // 2
-            y = self.y + (self.size - self.scaled_frame_height) // 2
+            # ⚡ Bolt Optimization: Use pre-calculated offset
+            x = self.x + self.draw_offset_x
+            y = self.y + self.draw_offset_y
             
             painter.drawPixmap(int(x), int(y), scaled_frame) 

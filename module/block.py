@@ -86,6 +86,12 @@ class Block:
         self.img_w = self.image.width() if self.image else 0
         self.img_h = self.image.height() if self.image else 0
         
+        # Pre-calculate common properties to avoid float math/division in hot paths
+        self.explosion_offset_x = 0
+        self.explosion_offset_y = 0
+        self.static_offset_x = 0
+        self.static_offset_y = 0
+
         # Set animation properties based on image type
         if self.image_type == "barrel":
             self.should_rotate = True
@@ -93,10 +99,24 @@ class Block:
             self.width = 50  # Barrels are slightly bigger
             self.height = 50
             self.explosion_size = int(self.width * 2.5)
+
+            # ⚡ Bolt Optimization: Pre-calculate explosion hitbox offsets
+            self.explosion_offset_x = (self.width // 2) - (self.explosion_size // 2)
+            self.explosion_offset_y = (self.height // 2) - (self.explosion_size // 2)
+
             self.explosion_extra = int(self.width * 0.75) # Not directly used for offset if using center_x but kept
             self.hitbox_reduction = int(self.width * 0.2)
             self.reduced_width = self.width - (self.hitbox_reduction * 2)
             self.reduced_height = self.height - (self.hitbox_reduction * 2)
+        elif self.image_type in Block.scaled_obstacle_images:
+            # ⚡ Bolt Optimization: Pre-calculate static image rendering offsets
+            _, scaled_w, scaled_h = Block.scaled_obstacle_images[self.image_type]
+            self.static_offset_x = (self.width - scaled_w) // 2
+            self.static_offset_y = (self.height - scaled_h) // 2
+
+        # ⚡ Bolt Optimization: Pre-calculate center offset for dynamic barrel rotation
+        self.center_offset_x = self.width / 2
+        self.center_offset_y = self.height / 2
             
     def update(self, is_random_blocks=None, game_width=None, floor_y=None):
         if self.explosion and not self.explosion.is_finished:
@@ -163,12 +183,10 @@ class Block:
     def get_rect(self):
         if self.image_type == "barrel":
             if self.is_exploding or (self.explosion and not self.explosion.is_finished):
-                # Make hitbox match the explosion animation size (2.5x)
-                center_x = int(self.x) + (self.width // 2)
-                center_y = int(self.y) + (self.height // 2)
+                # ⚡ Bolt Optimization: Use pre-calculated offset for explosion hitbox to avoid float math
                 return (
-                    center_x - self.explosion_size // 2,
-                    center_y - self.explosion_size // 2,
+                    int(self.x) + self.explosion_offset_x,
+                    int(self.y) + self.explosion_offset_y,
                     self.explosion_size,
                     self.explosion_size
                 )
@@ -199,10 +217,9 @@ class Block:
             
         # Optimization: Use pre-scaled image for static blocks to avoid expensive resizing every frame
         if self.image_type in Block.scaled_obstacle_images:
-            scaled_img, scaled_w, scaled_h = Block.scaled_obstacle_images[self.image_type]
-            x = self.x + (self.width - scaled_w) // 2
-            y = self.y + (self.height - scaled_h) // 2
-            painter.drawPixmap(int(x), int(y), scaled_img)
+            # ⚡ Bolt Optimization: Use pre-calculated offset for static blocks to avoid float math/division
+            scaled_img, _, _ = Block.scaled_obstacle_images[self.image_type]
+            painter.drawPixmap(int(self.x + self.static_offset_x), int(self.y + self.static_offset_y), scaled_img)
             return
 
         if self.image:
@@ -227,8 +244,9 @@ class Block:
                 rot_h = int(cached_h * scale_pulse)
 
                 # Center point of the block
-                center_x = self.x + block_w / 2
-                center_y = self.y + block_h / 2
+                # ⚡ Bolt Optimization: Use pre-calculated center offset to avoid float math
+                center_x = self.x + self.center_offset_x
+                center_y = self.y + self.center_offset_y
 
                 # Draw from top-left offset to center
                 draw_x = int(center_x - rot_w / 2)

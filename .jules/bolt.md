@@ -72,3 +72,6 @@
 ## 2026-05-18 - [Cache entity geometries to optimize collision hot-paths]
 **Learning:** In PyQt game loops, repeatedly performing arithmetic operations like float multiplication (e.g., `self.width * 0.7`) and integer division (e.g., `self.width // 2`) inside a `get_rect()` method causes noticeable overhead when these calculations happen on thousands of entities per second during collision loops.
 **Action:** Identify static entity dimensions and offsets and pre-calculate them during `__init__` (e.g., `self.hitbox_width`, `self.hitbox_offset_x`), allowing `get_rect()` to just return a tuple using simple addition.
+## 2026-05-18 - [Cache entity geometries to optimize collision hot-paths]
+**Learning:** In PyQt game loops, repeatedly performing arithmetic operations like float multiplication (e.g., `self.width * 0.7`) and integer division (e.g., `self.width // 2`) inside a `get_rect()` method causes noticeable overhead when these calculations happen on thousands of entities per second during collision loops.
+**Action:** Identify static entity dimensions and offsets and pre-calculate them during `__init__` (e.g., `self.hitbox_width`, `self.hitbox_offset_x`), allowing `get_rect()` to just return a tuple using simple addition.
