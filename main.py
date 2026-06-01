@@ -4,7 +4,7 @@ import os
 import random
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QStackedWidget, QMessageBox
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QFontDatabase
+from PyQt5.QtGui import QPainter, QColor, QFont, QPixmap, QFontDatabase, QFontMetrics
 from module.player import Player
 from module.block import Block
 from module.floor import Floor
@@ -129,7 +129,6 @@ class GameWidget(QWidget):
         self.cached_color_warning = QColor(255, 200, 0)
 
         # Pre-calculate static text bounding rects using temporary QFontMetrics
-        from PyQt5.QtGui import QFontMetrics
         metrics_48 = QFontMetrics(self.cached_font_48)
         self.cached_rect_game_over = metrics_48.boundingRect("Game Over!")
         
@@ -152,6 +151,11 @@ class GameWidget(QWidget):
             QColor(random.randint(180, 255), random.randint(0, 80), random.randint(0, 80), 180)
             for _ in range(50)
         ]
+
+        # ⚡ BOLT OPTIMIZATION: Cache rendered score and death screen text to avoid QPainter.drawText overhead
+        self._cached_score_value = None
+        self._cached_score_pixmap = None
+        self._cached_death_screen_pixmap = None
 
         self.warning_texts = {
             'reverse_floor': 'reverse floor',
@@ -294,6 +298,48 @@ class GameWidget(QWidget):
             self.death_animation_timer.stop()
             self.game_timer.stop()
             self.show_death_screen = True
+
+            # ⚡ BOLT OPTIMIZATION: Pre-render the entire death screen text block to a single QPixmap
+            w_width = self.width()
+            w_height = self.height()
+            self._cached_death_screen_pixmap = QPixmap(w_width, w_height)
+            self._cached_death_screen_pixmap.fill(Qt.transparent)
+
+            p = QPainter(self._cached_death_screen_pixmap)
+            p.setPen(self.cached_color_white)
+
+            # Draw Game Over text
+            p.setFont(self.cached_font_48)
+            x = (w_width - self.cached_rect_game_over.width()) // 2
+            y = (w_height - self.cached_rect_game_over.height()) // 2 - 40
+            p.drawText(x, y, "Game Over!")
+
+            # Draw Score
+            p.setFont(self.cached_font_32)
+            score_text = f"Score: {self.score}"
+            metrics_32 = QFontMetrics(self.cached_font_32)
+            score_rect = metrics_32.boundingRect(score_text)
+            x = (w_width - score_rect.width()) // 2
+            y += score_rect.height() + 20
+            p.drawText(x, y, score_text)
+
+            # Draw restart instruction
+            p.setFont(self.cached_font_22)
+            restart_text = "Press R to restart"
+            x = (w_width - self.cached_rect_restart.width()) // 2
+            y += self.cached_rect_restart.height() + 30
+            p.drawText(x, y, restart_text)
+
+            # Draw High Score
+            hs_text = f"High Score: {self.high_score}"
+            metrics_22 = QFontMetrics(self.cached_font_22)
+            hs_rect = metrics_22.boundingRect(hs_text)
+            x = (w_width - hs_rect.width()) // 2
+            y += hs_rect.height() + 20
+            p.drawText(x, y, hs_text)
+
+            p.end()
+
             self.sound_manager.play_game_over()
             self.update()
         else:
@@ -352,9 +398,28 @@ class GameWidget(QWidget):
             block.draw(painter)
             
         # Draw score
-        painter.setPen(self.cached_color_white)
-        painter.setFont(self.cached_font_20)
-        painter.drawText(10, 30, f"Score: {self.score}")
+        # ⚡ BOLT OPTIMIZATION: Use pre-rendered score pixmap to avoid expensive drawText calls
+        if self._cached_score_value != self.score or self._cached_score_pixmap is None:
+            self._cached_score_value = self.score
+            score_text = f"Score: {self.score}"
+            # Need to get a temporary QFontMetrics to find the bounding rect
+            metrics = QFontMetrics(self.cached_font_20)
+            rect = metrics.boundingRect(score_text)
+
+            # Create a transparent pixmap
+            self._cached_score_pixmap = QPixmap(rect.width() + 10, rect.height() + 10)
+            self._cached_score_pixmap.fill(Qt.transparent)
+
+            # Render the text onto the pixmap
+            p = QPainter(self._cached_score_pixmap)
+            p.setPen(self.cached_color_white)
+            p.setFont(self.cached_font_20)
+            p.drawText(0, metrics.ascent(), score_text)
+            p.end()
+
+            self._cached_score_ascent = metrics.ascent()
+
+        painter.drawPixmap(10, 30 - self._cached_score_ascent, self._cached_score_pixmap)
         
         # Draw health after score
         self.health_system.draw(painter)
@@ -364,40 +429,44 @@ class GameWidget(QWidget):
             # Semi-transparent black overlay
             painter.fillRect(w_rect, self.cached_color_overlay)
             
-            # Draw Game Over text with KarenFat font
-            painter.setPen(self.cached_color_white)
-            painter.setFont(self.cached_font_48)
-            x = (w_width - self.cached_rect_game_over.width()) // 2
-            y = (w_height - self.cached_rect_game_over.height()) // 2 - 40
-            painter.drawText(x, y, "Game Over!")
-            
-            # Draw Score with KarenFat font
-            painter.setFont(self.cached_font_32)
-            score_text = f"Score: {self.score}"
-            if score_text not in self.cached_dynamic_text_rects:
-                self.cached_dynamic_text_rects[score_text] = painter.fontMetrics().boundingRect(score_text)
-            text_rect = self.cached_dynamic_text_rects[score_text]
-            x = (w_width - text_rect.width()) // 2
-            y += text_rect.height() + 20
-            painter.drawText(x, y, score_text)
-            
-            # Draw restart instruction with KarenFat font
-            painter.setFont(self.cached_font_22)
-            restart_text = "Press R to restart"
-            text_rect = self.cached_rect_restart
-            x = (w_width - text_rect.width()) // 2
-            y += text_rect.height() + 30
-            painter.drawText(x, y, restart_text)
-            
-            # Draw High Score
-            painter.setFont(self.cached_font_22)
-            hs_text = f"High Score: {self.high_score}"
-            if hs_text not in self.cached_dynamic_text_rects:
-                self.cached_dynamic_text_rects[hs_text] = painter.fontMetrics().boundingRect(hs_text)
-            text_rect = self.cached_dynamic_text_rects[hs_text]
-            x = (w_width - text_rect.width()) // 2
-            y += text_rect.height() + 20
-            painter.drawText(x, y, hs_text)
+            if self._cached_death_screen_pixmap:
+                painter.drawPixmap(0, 0, self._cached_death_screen_pixmap)
+            else:
+                # Fallback if somehow the cache wasn't built
+                # Draw Game Over text with KarenFat font
+                painter.setPen(self.cached_color_white)
+                painter.setFont(self.cached_font_48)
+                x = (w_width - self.cached_rect_game_over.width()) // 2
+                y = (w_height - self.cached_rect_game_over.height()) // 2 - 40
+                painter.drawText(x, y, "Game Over!")
+
+                # Draw Score with KarenFat font
+                painter.setFont(self.cached_font_32)
+                score_text = f"Score: {self.score}"
+                if score_text not in self.cached_dynamic_text_rects:
+                    self.cached_dynamic_text_rects[score_text] = painter.fontMetrics().boundingRect(score_text)
+                text_rect = self.cached_dynamic_text_rects[score_text]
+                x = (w_width - text_rect.width()) // 2
+                y += text_rect.height() + 20
+                painter.drawText(x, y, score_text)
+
+                # Draw restart instruction with KarenFat font
+                painter.setFont(self.cached_font_22)
+                restart_text = "Press R to restart"
+                text_rect = self.cached_rect_restart
+                x = (w_width - text_rect.width()) // 2
+                y += text_rect.height() + 30
+                painter.drawText(x, y, restart_text)
+
+                # Draw High Score
+                painter.setFont(self.cached_font_22)
+                hs_text = f"High Score: {self.high_score}"
+                if hs_text not in self.cached_dynamic_text_rects:
+                    self.cached_dynamic_text_rects[hs_text] = painter.fontMetrics().boundingRect(hs_text)
+                text_rect = self.cached_dynamic_text_rects[hs_text]
+                x = (w_width - text_rect.width()) // 2
+                y += text_rect.height() + 20
+                painter.drawText(x, y, hs_text)
         
         # Draw abnormal warning if active
         if abnormal_active:

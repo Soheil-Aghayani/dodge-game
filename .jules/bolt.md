@@ -75,3 +75,6 @@
 ## 2026-05-18 - [Cache entity geometries to optimize collision hot-paths]
 **Learning:** In PyQt game loops, repeatedly performing arithmetic operations like float multiplication (e.g., `self.width * 0.7`) and integer division (e.g., `self.width // 2`) inside a `get_rect()` method causes noticeable overhead when these calculations happen on thousands of entities per second during collision loops.
 **Action:** Identify static entity dimensions and offsets and pre-calculate them during `__init__` (e.g., `self.hitbox_width`, `self.hitbox_offset_x`), allowing `get_rect()` to just return a tuple using simple addition.
+## 2026-05-19 - [Cache rendered text as QPixmap to optimize QPainter.drawText]
+**Learning:** In PyQt game loops, calling `painter.drawText()` with dynamically changing strings (like scores) or large static blocks of text (like game over screens) is significantly slower (up to 4-6x) than rendering a pre-cached `QPixmap`.
+**Action:** When rendering text, evaluate if the text changes every frame. If it updates infrequently (like a score) or is static once triggered (like a death screen), pre-render the text onto a transparent `QPixmap` and use `painter.drawPixmap()` in the render loop. Re-render the cache only when the text content changes.
