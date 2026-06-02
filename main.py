@@ -142,6 +142,19 @@ class GameWidget(QWidget):
             'random blocks': metrics_28_bold.boundingRect('random blocks')
         }
 
+        # ⚡ BOLT OPTIMIZATION: Cache pre-rendered warning texts to avoid expensive drawText calls
+        self.cached_warning_pixmaps = {}
+        for warning_text in self.cached_warning_rects.keys():
+            rect = self.cached_warning_rects[warning_text]
+            pixmap = QPixmap(rect.width() + 10, rect.height() + 10)
+            pixmap.fill(Qt.transparent)
+            p = QPainter(pixmap)
+            p.setPen(self.cached_color_warning)
+            p.setFont(self.cached_font_28_bold)
+            p.drawText(0, metrics_28_bold.ascent(), warning_text)
+            p.end()
+            self.cached_warning_pixmaps[warning_text] = (pixmap, metrics_28_bold.ascent(), rect)
+
         # ⚡ BOLT OPTIMIZATION: Cache dynamically calculated text bounding rects
         # and warning map to prevent recreating them on every render frame
         self.cached_dynamic_text_rects = {}
@@ -471,14 +484,22 @@ class GameWidget(QWidget):
         # Draw abnormal warning if active
         if abnormal_active:
             warning_text = self.warning_texts.get(abnormal_type, 'abnormal state')
-            painter.setPen(self.cached_color_warning)
-            painter.setFont(self.cached_font_28_bold)
-            if warning_text not in self.cached_warning_rects:
-                self.cached_warning_rects[warning_text] = painter.fontMetrics().boundingRect(warning_text)
-            text_rect = self.cached_warning_rects[warning_text]
-            x = (w_width - text_rect.width()) // 2
-            y = 60
-            painter.drawText(x, y, warning_text)
+
+            # ⚡ BOLT OPTIMIZATION: Draw pre-rendered warning pixmap if available
+            if warning_text in self.cached_warning_pixmaps:
+                pixmap, ascent, text_rect = self.cached_warning_pixmaps[warning_text]
+                x = (w_width - text_rect.width()) // 2
+                y = 60 - ascent
+                painter.drawPixmap(x, y, pixmap)
+            else:
+                painter.setPen(self.cached_color_warning)
+                painter.setFont(self.cached_font_28_bold)
+                if warning_text not in self.cached_warning_rects:
+                    self.cached_warning_rects[warning_text] = painter.fontMetrics().boundingRect(warning_text)
+                text_rect = self.cached_warning_rects[warning_text]
+                x = (w_width - text_rect.width()) // 2
+                y = 60
+                painter.drawText(x, y, warning_text)
         
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Escape:

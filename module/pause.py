@@ -42,6 +42,16 @@ class PauseScreen(QWidget):
         metrics = QFontMetrics(self._cached_font)
         self._cached_text_rect = metrics.boundingRect("PAUSED")
 
+        # ⚡ BOLT OPTIMIZATION: Pre-render "PAUSED" text into a QPixmap
+        self._cached_paused_pixmap = QPixmap(self._cached_text_rect.width() + 20, self._cached_text_rect.height() + 20)
+        self._cached_paused_pixmap.fill(Qt.transparent)
+        p = QPainter(self._cached_paused_pixmap)
+        p.setPen(self._cached_text_color)
+        p.setFont(self._cached_font)
+        p.drawText(0, metrics.ascent(), "PAUSED")
+        p.end()
+        self._cached_text_ascent = metrics.ascent()
+
         # Create buttons
         self.setup_buttons()
             
@@ -144,12 +154,11 @@ class PauseScreen(QWidget):
         # Draw semi-transparent overlay
         painter.fillRect(w_rect, self._cached_overlay_color)
         
-        # Draw "PAUSED" text with custom font
-        painter.setPen(self._cached_text_color)
-        painter.setFont(self._cached_font)
+        # Draw "PAUSED" text
+        # ⚡ BOLT OPTIMIZATION: Draw pre-rendered pixmap instead of using expensive drawText
         x = (w_width - self._cached_text_rect.width()) // 2
-        y = 150
-        painter.drawText(x, y, "PAUSED")
+        y = 150 - self._cached_text_ascent
+        painter.drawPixmap(x, y, self._cached_paused_pixmap)
             
     def resume_action(self):
         if isinstance(self.parent(), QWidget):
