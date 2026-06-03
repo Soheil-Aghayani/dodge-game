@@ -75,13 +75,16 @@ class Player:
             self.jump_animation.start_jump(self.y)
             self.current_animation = self.jump_animation
         
-    def update(self, current_time, floor_y=None):
+    def update(self, current_time, floor_y=None, game_width=None):
         delta_time = current_time - self.last_update
         self.last_update = current_time
         
         # Fetch floor_y once if not provided
         if floor_y is None:
             floor_y = self.game_widget.floor.get_y_position()
+
+        if game_width is None:
+            game_width = self.game_widget.width()
 
         # Update jump state
         if self.jump_animation.is_jumping:
@@ -98,7 +101,7 @@ class Player:
                 self.x = max(0, new_x)
                 self.facing_right = False
             else:  # Moving right
-                self.x = min(self.game_widget.width() - self.width, new_x)
+                self.x = min(game_width - self.width, new_x)
                 self.facing_right = True
             self.last_movement_time = current_time
             self.is_moving = True  # Set moving state when actually moving

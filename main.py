@@ -222,7 +222,7 @@ class GameWidget(QWidget):
         floor_y = self.floor.get_y_position()
 
         # Always update player animation, even when game is not active
-        self.player.update(current_time, floor_y=floor_y)
+        self.player.update(current_time, floor_y=floor_y, game_width=game_width)
         
         # Update abnormal state
         prev_active = self.abnormal_manager.is_active()
