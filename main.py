@@ -28,8 +28,10 @@ class GameWindow(QMainWindow):
         self.setCentralWidget(self.stacked_widget)
         
         # Create game widget and menu
-        self.game_widget = GameWidget(self)
+        # ⚡ BOLT OPTIMIZATION: Share a single SoundManager instance across the app
+        # to avoid duplicate memory allocation, redundant disk I/O, and duplicate audio instances.
         self.sound_manager = SoundManager()
+        self.game_widget = GameWidget(self, self.sound_manager)
         self.main_menu = MainMenu(self, self.sound_manager)
         self.settings_menu = SettingsMenu(self, self.sound_manager)
         
@@ -53,7 +55,7 @@ class GameWindow(QMainWindow):
         self.stacked_widget.setCurrentWidget(self.settings_menu)
 
 class GameWidget(QWidget):
-    def __init__(self, parent):
+    def __init__(self, parent, sound_manager):
         super().__init__(parent)
         self.parent = parent
         self.setFocusPolicy(Qt.StrongFocus)
@@ -71,7 +73,8 @@ class GameWidget(QWidget):
         self.is_paused = False
         
         # Initialize sound manager
-        self.sound_manager = SoundManager()
+        # ⚡ BOLT OPTIMIZATION: Use shared sound_manager passed from parent
+        self.sound_manager = sound_manager
         
         # Initialize background
         self.background = Background(self)
