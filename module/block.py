@@ -223,18 +223,10 @@ class Block:
             return
 
         if self.image:
-            img_w = self.img_w
-            img_h = self.img_h
-            block_w = self.width
-            block_h = self.height
             scale_pulse = 1.0
             if self.should_pulse:
                 scale_pulse = 0.85 + 0.15 * (1 + math.sin(self.pulse_time + self.pulse_phase))
-            scale = min(block_w / img_w, block_h / img_h) * scale_pulse
-            new_w = int(img_w * scale)
-            new_h = int(img_h * scale)
-            x = self.x + (block_w - new_w) // 2
-            y = self.y + (block_h - new_h) // 2
+
             if self.should_rotate and self.angle in Block._cached_rotated_barrels:
                 # ⚡ Bolt: Use pre-cached rotated image to bypass expensive C++ boundary calls
                 # (painter.save/restore, translate, rotate) in the hot render loop.
@@ -254,6 +246,15 @@ class Block:
 
                 painter.drawPixmap(draw_x, draw_y, rot_w, rot_h, cached_img)
             else:
+                img_w = self.img_w
+                img_h = self.img_h
+                block_w = self.width
+                block_h = self.height
+                scale = min(block_w / img_w, block_h / img_h) * scale_pulse
+                new_w = int(img_w * scale)
+                new_h = int(img_h * scale)
+                x = self.x + (block_w - new_w) // 2
+                y = self.y + (block_h - new_h) // 2
                 painter.drawPixmap(int(x), int(y), int(new_w), int(new_h), self.image)
         else:
             if Block.fallback_color is None:

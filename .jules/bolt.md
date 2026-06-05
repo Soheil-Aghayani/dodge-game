@@ -78,3 +78,6 @@
 ## 2026-05-19 - [Cache rendered text as QPixmap to optimize QPainter.drawText]
 **Learning:** In PyQt game loops, calling `painter.drawText()` with dynamically changing strings (like scores) or large static blocks of text (like game over screens) is significantly slower (up to 4-6x) than rendering a pre-cached `QPixmap`.
 **Action:** When rendering text, evaluate if the text changes every frame. If it updates infrequently (like a score) or is static once triggered (like a death screen), pre-render the text onto a transparent `QPixmap` and use `painter.drawPixmap()` in the render loop. Re-render the cache only when the text content changes.
+## 2026-05-20 - [Defer geometry math inside conditional blocks in render loops]
+**Learning:** In high-frequency render loops (like `Block.draw()`), calculating variables (such as scale, coordinate offsets, float divisions, or bounds) before checking conditionals often leads to discarded calculations if the entity relies on a pre-cached path (like pre-rotated images). This causes thousands of wasted floating-point math operations per second.
+**Action:** In high-frequency loops, defer all variable calculations into specific `if`/`else` blocks whenever possible so they are evaluated strictly when required by that specific rendering path.
