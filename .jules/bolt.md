@@ -78,3 +78,11 @@
 ## 2026-05-19 - [Cache rendered text as QPixmap to optimize QPainter.drawText]
 **Learning:** In PyQt game loops, calling `painter.drawText()` with dynamically changing strings (like scores) or large static blocks of text (like game over screens) is significantly slower (up to 4-6x) than rendering a pre-cached `QPixmap`.
 **Action:** When rendering text, evaluate if the text changes every frame. If it updates infrequently (like a score) or is static once triggered (like a death screen), pre-render the text onto a transparent `QPixmap` and use `painter.drawPixmap()` in the render loop. Re-render the cache only when the text content changes.
+
+## 2026-05-20 - [Defer heavy geometry math in render loops]
+**Learning:** In PyQt game loops, unconditionally calculating math for geometry (e.g., `scale`, `width`, `height`, `x`, `y`) at the start of a `draw()` method wastes CPU cycles if the subsequent conditional branches do not use them (e.g., when rendering a pre-cached object).
+**Action:** Always defer heavy geometry math and variable initializations into the specific conditional blocks where they are actually utilized.
+
+## 2026-05-20 - [Pass loop-invariant current_time to avoid redundant system calls]
+**Learning:** In nested update loops (like `Block.update` called from `update_game`), invoking `int(time.time() * 1000)` locally for every entity creates redundant system call overhead when processing many entities.
+**Action:** Calculate `current_time` once at the top of the main update loop and pass it as an argument to nested update functions to minimize system calls.

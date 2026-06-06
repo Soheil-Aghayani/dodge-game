@@ -271,7 +271,7 @@ class GameWidget(QWidget):
         # ⚡ BOLT OPTIMIZATION: Iterate backwards and use pop(i) instead of shallow copy and remove() to avoid O(N) allocation and O(N) search overhead.
         for i in range(len(self.blocks) - 1, -1, -1):
             block = self.blocks[i]
-            if block.update(is_random_blocks, game_width, floor_y):  # Block reached bottom
+            if block.update(is_random_blocks, game_width, floor_y, current_time):  # Block reached bottom
                 self.blocks.pop(i)
                 self.score += 1
             elif block.check_collision(player_rect):
