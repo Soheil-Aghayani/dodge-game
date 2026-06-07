@@ -265,6 +265,14 @@ class Block:
     def check_collision(self, player_rect):
         # player_rect is now a tuple (x, y, w, h)
         px, py, pw, ph = player_rect
+
+        # ⚡ Bolt Optimization: Fast vertical broad-phase check.
+        # If the block (even accounting for max explosion size ~150px) is completely
+        # above or below the player, return early without computing the exact rect
+        # or doing the more complex intersection math.
+        if self.y + 150 < py or self.y - 150 > py + ph:
+            return False
+
         rect = self.get_rect()
         if not rect:
             return False
