@@ -86,3 +86,6 @@
 ## 2026-05-20 - [Pass loop-invariant current_time to avoid redundant system calls]
 **Learning:** In nested update loops (like `Block.update` called from `update_game`), invoking `int(time.time() * 1000)` locally for every entity creates redundant system call overhead when processing many entities.
 **Action:** Calculate `current_time` once at the top of the main update loop and pass it as an argument to nested update functions to minimize system calls.
+## 2026-05-20 - [Optimize Collision Hot-Paths with Broad-Phase Early Returns]
+**Learning:** In PyQt games, collision detection inside high-frequency loops (like checking all blocks against the player every frame) can be a bottleneck. Calling methods to fetch bounding rects and doing complex AABB intersection checks on entities that are nowhere near each other wastes CPU cycles.
+**Action:** Implement simple 1D bounding-volume broad-phase checks (e.g., `if self.y + 150 < py: return False`) at the start of collision methods to early-return before executing heavy math or method calls.
