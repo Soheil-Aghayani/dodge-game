@@ -89,3 +89,6 @@
 ## 2026-05-20 - [Optimize Collision Hot-Paths with Broad-Phase Early Returns]
 **Learning:** In PyQt games, collision detection inside high-frequency loops (like checking all blocks against the player every frame) can be a bottleneck. Calling methods to fetch bounding rects and doing complex AABB intersection checks on entities that are nowhere near each other wastes CPU cycles.
 **Action:** Implement simple 1D bounding-volume broad-phase checks (e.g., `if self.y + 150 < py: return False`) at the start of collision methods to early-return before executing heavy math or method calls.
+## 2026-06-12 - [Pre-cache random choice arguments in frequent instantiation]
+**Learning:** In high-frequency object instantiation (e.g., spawning `Block`s every few frames), defining inline dictionaries (e.g., `weights = {'barrel': 0.5, ...}`) and calling `list(weights.keys())` to pass to `random.choices` causes redundant memory allocations and garbage collection overhead on every spawn.
+**Action:** Define the keys and values as static, class-level lists (e.g., `_image_keys`, `_image_values`) and use those directly in `random.choices()` to optimize initialization speed.

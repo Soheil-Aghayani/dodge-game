@@ -12,6 +12,15 @@ class Block:
     scaled_obstacle_images = {}
     fallback_color = None
     
+    # Pre-cached random choice allocations
+    _image_weights = {
+        "barrel": 0.5,
+        "metalbox": 0.3,
+        "woodenbox": 0.2
+    }
+    _image_keys = list(_image_weights.keys())
+    _image_values = list(_image_weights.values())
+
     def __init__(self, game_widget):
         self.game_widget = game_widget
         self.width = 40
@@ -76,12 +85,8 @@ class Block:
                     Block.scaled_obstacle_images[type_name] = (scaled_img, new_w, new_h)
         
         # Randomly select an image with weights
-        weights = {
-            "barrel": 0.5,
-            "metalbox": 0.3,
-            "woodenbox": 0.2
-        }
-        self.image_type = random.choices(list(weights.keys()), list(weights.values()))[0]
+        # ⚡ Bolt Optimization: Use pre-cached keys and values to avoid redundant allocations on every spawn
+        self.image_type = random.choices(Block._image_keys, Block._image_values)[0]
         self.image = Block.obstacle_images.get(self.image_type)
         self.img_w = self.image.width() if self.image else 0
         self.img_h = self.image.height() if self.image else 0
