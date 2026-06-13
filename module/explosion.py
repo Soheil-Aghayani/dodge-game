@@ -19,23 +19,22 @@ class ExplosionAnimation(Animation):
         # Check cache first
         if scaled_size in ExplosionAnimation._cached_scaled_frames_by_size:
             self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height = ExplosionAnimation._cached_scaled_frames_by_size[scaled_size]
-            return
+        else:
+            self.scaled_frames = []
+            self.scaled_frame_width = 0
+            self.scaled_frame_height = 0
+            for frame in self.frames:
+                if frame:
+                    scaled_frame = frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
+                    self.scaled_frames.append(scaled_frame)
+                    if self.scaled_frame_width == 0:
+                        self.scaled_frame_width = scaled_frame.width()
+                        self.scaled_frame_height = scaled_frame.height()
+                else:
+                    self.scaled_frames.append(None)
 
-        self.scaled_frames = []
-        self.scaled_frame_width = 0
-        self.scaled_frame_height = 0
-        for frame in self.frames:
-            if frame:
-                scaled_frame = frame.scaled(scaled_size, scaled_size, Qt.KeepAspectRatio, Qt.FastTransformation)
-                self.scaled_frames.append(scaled_frame)
-                if self.scaled_frame_width == 0:
-                    self.scaled_frame_width = scaled_frame.width()
-                    self.scaled_frame_height = scaled_frame.height()
-            else:
-                self.scaled_frames.append(None)
-
-        # Cache for future use
-        ExplosionAnimation._cached_scaled_frames_by_size[scaled_size] = (self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height)
+            # Cache for future use
+            ExplosionAnimation._cached_scaled_frames_by_size[scaled_size] = (self.scaled_frames, self.scaled_frame_width, self.scaled_frame_height)
 
         # ⚡ Bolt Optimization: Pre-calculate drawing offsets to avoid division in render loop
         self.draw_offset_x = (self.size - self.scaled_frame_width) // 2
