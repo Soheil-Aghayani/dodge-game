@@ -92,3 +92,6 @@
 ## 2026-06-12 - [Pre-cache random choice arguments in frequent instantiation]
 **Learning:** In high-frequency object instantiation (e.g., spawning `Block`s every few frames), defining inline dictionaries (e.g., `weights = {'barrel': 0.5, ...}`) and calling `list(weights.keys())` to pass to `random.choices` causes redundant memory allocations and garbage collection overhead on every spawn.
 **Action:** Define the keys and values as static, class-level lists (e.g., `_image_keys`, `_image_values`) and use those directly in `random.choices()` to optimize initialization speed.
+## 2024-11-21 - [Optimize Collision Hot-Paths with 2D Broad-Phase Early Returns]
+**Learning:** In PyQt games, 1D broad-phase checks (e.g. vertical boundaries only) on bounding volumes help filter out distant entities. However, extending these into 2D broad-phase checks by also verifying horizontal boundaries skips significantly more unneeded complex AABB generation (e.g., getting the explosion box sizes) and intersection calculation loops during collision.
+**Action:** Implement 2D bounding-volume broad-phase checks (`if self.y + 150 < py or self.x + 150 < px: ...`) instead of 1D prior to complex arithmetic or generating full bounding boxes in collision detection loops.
