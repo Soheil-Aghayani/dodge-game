@@ -95,3 +95,9 @@
 ## 2024-11-21 - [Optimize Collision Hot-Paths with 2D Broad-Phase Early Returns]
 **Learning:** In PyQt games, 1D broad-phase checks (e.g. vertical boundaries only) on bounding volumes help filter out distant entities. However, extending these into 2D broad-phase checks by also verifying horizontal boundaries skips significantly more unneeded complex AABB generation (e.g., getting the explosion box sizes) and intersection calculation loops during collision.
 **Action:** Implement 2D bounding-volume broad-phase checks (`if self.y + 150 < py or self.x + 150 < px: ...`) instead of 1D prior to complex arithmetic or generating full bounding boxes in collision detection loops.
+## 2026-06-17 - [Use Tuples for Inline Event Lists]
+**Learning:** In PyQt5 event handlers (like `keyPressEvent` or `keyReleaseEvent`), checking membership against inline lists (e.g., `if key not in [Qt.Key_Left, Qt.Key_Right]`) causes redundant list allocations and garbage collection overhead on every key press/release.
+**Action:** Replace inline lists with tuples (e.g., `(Qt.Key_Left, Qt.Key_Right)`) for membership checks to optimize performance and eliminate unnecessary allocations.
+## 2026-06-17 - [Pre-cache Inline Method Arguments]
+**Learning:** In high-frequency paths (like the hot block `update` method), calling methods with inline lists (e.g., `random.choice([-3, -2, 2, 3])`) creates a new list in memory every execution, triggering garbage collection.
+**Action:** Define the options as static class attributes (e.g., `_random_speeds = (-3, -2, 2, 3)`) and pass the attribute reference to the method to avoid re-allocating memory.

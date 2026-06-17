@@ -553,7 +553,9 @@ class GameWidget(QWidget):
             return
             
         # Only add the key to pressed_keys if it's not a movement key
-        if event.key() not in [Qt.Key_Left, Qt.Key_Right]:
+        # ⚡ BOLT OPTIMIZATION: Use tuple (Qt.Key_Left, Qt.Key_Right) instead of inline list literal
+        # to avoid allocation and garbage collection overhead on key events.
+        if event.key() not in (Qt.Key_Left, Qt.Key_Right):
             self.pressed_keys.add(event.key())
         
     def keyReleaseEvent(self, event):
@@ -574,7 +576,9 @@ class GameWidget(QWidget):
         self.pressed_keys.discard(event.key())
         
         # If no movement keys are pressed, stop movement
-        if not any(key in self.pressed_keys for key in [Qt.Key_Left, Qt.Key_Right]):
+        # ⚡ BOLT OPTIMIZATION: Use tuple (Qt.Key_Left, Qt.Key_Right) instead of inline list literal
+        # to avoid allocation and garbage collection overhead on key events.
+        if not any(key in self.pressed_keys for key in (Qt.Key_Left, Qt.Key_Right)):
             self.player.stop_movement()
 
     def load_high_score(self):
