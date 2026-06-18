@@ -14,11 +14,17 @@ class AbnormalManager:
         self.active = False
         self.manual_mode = False  # For test/manual activation
         self.last_abnormal_type = None  # Track last used abnormal type
+        self._last_score = -1
 
     def update(self, score):
         if self.manual_mode:
             return  # Do not auto-update in manual mode
             
+        # ⚡ Bolt Optimization: Early return if score hasn't changed to avoid redundant calculation
+        if score == self._last_score:
+            return
+        self._last_score = score
+
         # Calculate current window (every 100 points)
         window = score // 100
         

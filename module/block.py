@@ -21,6 +21,9 @@ class Block:
     _image_keys = list(_image_weights.keys())
     _image_values = list(_image_weights.values())
 
+    # ⚡ Bolt Optimization: Pre-cache random speeds to avoid allocating a new list per choice
+    _random_speeds = [-3, -2, 2, 3]
+
     def __init__(self, game_widget):
         self.game_widget = game_widget
         self.width = 40
@@ -38,7 +41,7 @@ class Block:
         self.image_type = None
         
         # Random movement properties
-        self.horizontal_speed = random.choice([-3, -2, 2, 3])  # Random initial direction and speed
+        self.horizontal_speed = random.choice(Block._random_speeds)  # Random initial direction and speed
         self.direction_change_timer = random.randint(20, 60)  # Random timer for direction changes
         
         # Load images if not already loaded
@@ -164,7 +167,7 @@ class Block:
             # Randomly change direction
             self.direction_change_timer -= 1
             if self.direction_change_timer <= 0:
-                self.horizontal_speed = random.choice([-3, -2, 2, 3])
+                self.horizontal_speed = random.choice(Block._random_speeds)
                 self.direction_change_timer = random.randint(20, 60)
         
         if self.should_rotate:
