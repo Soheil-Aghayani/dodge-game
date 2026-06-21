@@ -95,3 +95,6 @@
 ## 2024-11-21 - [Optimize Collision Hot-Paths with 2D Broad-Phase Early Returns]
 **Learning:** In PyQt games, 1D broad-phase checks (e.g. vertical boundaries only) on bounding volumes help filter out distant entities. However, extending these into 2D broad-phase checks by also verifying horizontal boundaries skips significantly more unneeded complex AABB generation (e.g., getting the explosion box sizes) and intersection calculation loops during collision.
 **Action:** Implement 2D bounding-volume broad-phase checks (`if self.y + 150 < py or self.x + 150 < px: ...`) instead of 1D prior to complex arithmetic or generating full bounding boxes in collision detection loops.
+## 2026-06-15 - [Use tuples for key event membership checks]
+**Learning:** In PyQt5 key event handlers (e.g., `keyPressEvent`, `keyReleaseEvent`), using inline lists for membership checks (`in` / `not in`) causes unnecessary memory allocations and garbage collection overhead on every keyboard input.
+**Action:** Use tuples (like `(Qt.Key_Left, Qt.Key_Right)`) rather than inline lists to avoid this overhead, as tuples are immutable and optimized by Python.
