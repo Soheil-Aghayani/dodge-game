@@ -379,14 +379,23 @@ class GameWidget(QWidget):
 
         # Glitch effect
         if self.glitch_timer > 0:
+            # ⚡ Bolt Optimization: Use fast math for random coordinates and pre-cache random values
+            rand_fn = random.random
+            colors = self.cached_glitch_colors
+            num_colors = len(colors)
+            fr = painter.fillRect
             for _ in range(20):
-                x = random.randint(0, w_width)
-                y = random.randint(0, w_height)
-                w = random.randint(10, 80)
-                h = random.randint(5, 30)
-                color = random.choice(self.cached_glitch_colors)
-                painter.fillRect(x, y, w, h, color)
-            painter.translate(random.randint(-20, 20), random.randint(-20, 20))
+                x = int(rand_fn() * w_width)
+                y = int(rand_fn() * w_height)
+                w = int(rand_fn() * 70) + 10
+                h = int(rand_fn() * 25) + 5
+                color = colors[int(rand_fn() * num_colors)]
+                fr(x, y, w, h, color)
+
+            # Translate only once, but avoid multiple function calls per frame
+            tx = int(rand_fn() * 40) - 20
+            ty = int(rand_fn() * 40) - 20
+            painter.translate(tx, ty)
         else:
             # Flip the whole game if reverse_floor is active
             reverse_floor = abnormal_active and abnormal_type == 'reverse_floor'
