@@ -379,14 +379,18 @@ class GameWidget(QWidget):
 
         # Glitch effect
         if self.glitch_timer > 0:
+            # OPTIMIZATION: Cache random.random locally and use it for fast integer generation
+            # This avoids the overhead of random.randint and random.choice in this high-frequency render loop.
+            rnd = random.random
+            num_colors = len(self.cached_glitch_colors)
             for _ in range(20):
-                x = random.randint(0, w_width)
-                y = random.randint(0, w_height)
-                w = random.randint(10, 80)
-                h = random.randint(5, 30)
-                color = random.choice(self.cached_glitch_colors)
+                x = int(rnd() * (w_width + 1))
+                y = int(rnd() * (w_height + 1))
+                w = int(rnd() * 71) + 10
+                h = int(rnd() * 26) + 5
+                color = self.cached_glitch_colors[int(rnd() * num_colors)]
                 painter.fillRect(x, y, w, h, color)
-            painter.translate(random.randint(-20, 20), random.randint(-20, 20))
+            painter.translate(int(rnd() * 41) - 20, int(rnd() * 41) - 20)
         else:
             # Flip the whole game if reverse_floor is active
             reverse_floor = abnormal_active and abnormal_type == 'reverse_floor'
