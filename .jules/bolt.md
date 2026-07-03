@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2026-07-28 - [Cache QPainter.setOpacity results in getter loops]
+**Learning:** In PyQt game loops, calling `QPainter.setOpacity()` and manually re-drawing a frame to a temporary transparent `QPixmap` inside getter methods (like `get_current_frame()`) on every single frame causes significant performance degradation (~15x slower).
+**Action:** Always cache the resulting `QPixmap` inside the object after modifying its opacity and return the cached image. Invalidate and re-render the cache only when the underlying frame, facing direction, or opacity value actually changes.
