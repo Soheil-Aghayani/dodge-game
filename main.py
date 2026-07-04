@@ -268,13 +268,18 @@ class GameWidget(QWidget):
         # Pre-calculate loop invariants to avoid repeated C++ property lookups and evaluations
         is_random_blocks = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'random_blocks'
 
+        # ⚡ BOLT OPTIMIZATION: Pre-calculate player rect additions for collision detection loop
+        px, py, pw, ph = player_rect
+        px_pw = px + pw
+        py_ph = py + ph
+
         # ⚡ BOLT OPTIMIZATION: Iterate backwards and use pop(i) instead of shallow copy and remove() to avoid O(N) allocation and O(N) search overhead.
         for i in range(len(self.blocks) - 1, -1, -1):
             block = self.blocks[i]
             if block.update(is_random_blocks, game_width, floor_y, current_time):  # Block reached bottom
                 self.blocks.pop(i)
                 self.score += 1
-            elif block.check_collision(player_rect):
+            elif block.check_collision(player_rect, px_pw, py_ph):
                 if self.health_system.take_damage():  # Only process collision if damage was dealt
                     self.sound_manager.play_collision()
                     if self.health_system.is_game_over():

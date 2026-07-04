@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2026-06-31 - [Pre-calculate player boundary coordinates in hot collision loops]
+**Learning:** In a typical collision loop where multiple objects check intersection against a single entity (like blocks against the player), repeatedly recalculating the target entity's boundaries (e.g., `px + pw` and `py + ph`) within the target's method wastes CPU cycles.
+**Action:** Pre-calculate these boundary values in the main loop before iterating, and pass them down into the collision method (`check_collision(player_rect, px_pw, py_ph)`) to eliminate redundant arithmetic during broad-phase checks.
