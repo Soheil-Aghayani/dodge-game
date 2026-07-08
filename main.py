@@ -383,13 +383,17 @@ class GameWidget(QWidget):
             # This avoids the overhead of random.randint and random.choice in this high-frequency render loop.
             rnd = random.random
             num_colors = len(self.cached_glitch_colors)
+
+            # ⚡ BOLT OPTIMIZATION: Cache painter.fillRect locally to avoid redundant Python attribute lookups inside the high-frequency loop
+            fill_rect = painter.fillRect
+
             for _ in range(20):
                 x = int(rnd() * (w_width + 1))
                 y = int(rnd() * (w_height + 1))
                 w = int(rnd() * 71) + 10
                 h = int(rnd() * 26) + 5
                 color = self.cached_glitch_colors[int(rnd() * num_colors)]
-                painter.fillRect(x, y, w, h, color)
+                fill_rect(x, y, w, h, color)
             painter.translate(int(rnd() * 41) - 20, int(rnd() * 41) - 20)
         else:
             # Flip the whole game if reverse_floor is active

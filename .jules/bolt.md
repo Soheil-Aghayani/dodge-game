@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2024-11-21 - [Cache highly-used methods locally in hot loops]
+**Learning:** In PyQt high-frequency render loops (like `paintEvent`), repeatedly looking up object attributes and methods (e.g., `painter.fillRect`) inside a loop causes noticeable Python attribute lookup overhead.
+**Action:** When a method like `painter.fillRect` is called many times in a tight loop (e.g., the glitch effect drawing 20 rects), assign it to a local variable (e.g., `fill_rect = painter.fillRect`) just before the loop and use the local reference inside the loop to avoid redundant attribute lookups.
