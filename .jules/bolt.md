@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2026-06-30 - [Inline tuple-based geometries in Collision Detection Hot-Paths]
+**Learning:** In PyQt game loops, even when avoiding heavy `QRect` instantiations by returning plain Python tuples from a `get_rect()` method, the overhead of the function call itself and the dynamic creation/unpacking of the tuple on thousands of entities per frame during collision loops creates a measurable bottleneck.
+**Action:** Inline the tuple creation and geometry unpacking directly into the `check_collision` method so that bounding box coordinates are assigned directly to local variables, bypassing the `get_rect()` function call entirely.

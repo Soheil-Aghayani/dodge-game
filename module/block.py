@@ -281,12 +281,27 @@ class Block:
         if self.y + 150 < py or self.y - 150 > py + ph or self.x + 150 < px or self.x - 150 > px + pw:
             return False
 
-        rect = self.get_rect()
-        if not rect:
+        # ⚡ Bolt Optimization: Inline get_rect logic to bypass function call overhead
+        # and intermediate tuple allocations in this hot loop.
+        is_exploding_active = self.explosion and not self.explosion.is_finished
+        if self.is_exploding and not is_exploding_active:
             return False
 
-        bx, by, bw, bh = rect
-        # Check normal collision if not exploding, or if explosion animation is playing
-        if (self.explosion and not self.explosion.is_finished) or not self.is_exploding:
-            return not (px >= bx + bw or px + pw <= bx or py >= by + bh or py + ph <= by)
-        return False
+        if self.image_type == "barrel":
+            if is_exploding_active:
+                bx = int(self.x) + self.explosion_offset_x
+                by = int(self.y) + self.explosion_offset_y
+                bw = self.explosion_size
+                bh = self.explosion_size
+            else:
+                bx = int(self.x) + self.hitbox_reduction
+                by = int(self.y) + self.hitbox_reduction
+                bw = self.reduced_width
+                bh = self.reduced_height
+        else:
+            bx = int(self.x)
+            by = int(self.y)
+            bw = self.width
+            bh = self.height
+
+        return not (px >= bx + bw or px + pw <= bx or py >= by + bh or py + ph <= by)
