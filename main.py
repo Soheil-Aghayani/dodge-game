@@ -264,7 +264,8 @@ class GameWidget(QWidget):
             self.last_movement_time = current_time
             
         # Update blocks
-        player_rect = self.player.get_rect()
+        px, py, pw, ph = self.player.get_rect()
+        player_bounds = (px, py, px + pw, py + ph)
         # Pre-calculate loop invariants to avoid repeated C++ property lookups and evaluations
         is_random_blocks = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'random_blocks'
 
@@ -274,7 +275,7 @@ class GameWidget(QWidget):
             if block.update(is_random_blocks, game_width, floor_y, current_time):  # Block reached bottom
                 self.blocks.pop(i)
                 self.score += 1
-            elif block.check_collision(player_rect):
+            elif block.check_collision(player_bounds):
                 if self.health_system.take_damage():  # Only process collision if damage was dealt
                     self.sound_manager.play_collision()
                     if self.health_system.is_game_over():

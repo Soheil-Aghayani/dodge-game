@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2024-11-21 - [Pre-calculate Reference Entity Boundaries in Multi-Entity Collision Loops]
+**Learning:** In PyQt game loops, checking collisions between one reference entity (like a player) and multiple target entities (like blocks) by recalculating the reference entity's bounds (`px + pw`, `py + ph`) during every single check introduces measurable overhead.
+**Action:** When performing multi-entity collisions, pre-calculate the boundaries of the reference entity directly before the loop and pass those bounds down to the collision checking methods to eliminate redundant arithmetic.
