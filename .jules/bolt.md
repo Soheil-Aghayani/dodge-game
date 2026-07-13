@@ -101,3 +101,11 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+
+## 2026-05-25 - [Inline tuple calculation in collision hot-paths]
+**Learning:** In high-frequency collision detection loops, calling external methods like `get_rect()` that return tuples creates measurable function call and dynamic tuple allocation overhead.
+**Action:** Inlining the geometry math directly into the collision method to assign bounds to local variables avoids this bottleneck.
+
+## 2026-05-25 - [Pre-calculate reference entity boundaries in collision loops]
+**Learning:** In multi-entity collision loops (e.g. checking all blocks against the player), repeatedly calculating the reference entity's right and bottom coordinates (like `px + pw` and `py + ph`) during each target object's broad-phase or narrow-phase check causes redundant arithmetic overhead.
+**Action:** Pre-calculate the reference entity's boundary coordinates (e.g., `pright = px + pw` and `pbottom = py + ph`) before the loop and pass them into the collision check methods to prevent redundant arithmetic calculations per entity.

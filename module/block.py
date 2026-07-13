@@ -270,23 +270,34 @@ class Block:
             painter.setBrush(Block.fallback_color)
             painter.drawRect(QRect(*self.get_rect()))
             
-    def check_collision(self, player_rect):
-        # player_rect is now a tuple (x, y, w, h)
-        px, py, pw, ph = player_rect
-
+    def check_collision(self, px, py, pright, pbottom):
         # ⚡ Bolt Optimization: Fast 2D broad-phase check.
         # If the block (even accounting for max explosion size ~150px) is completely
         # above, below, to the left, or to the right of the player, return early
         # without computing the exact rect or doing the more complex intersection math.
-        if self.y + 150 < py or self.y - 150 > py + ph or self.x + 150 < px or self.x - 150 > px + pw:
+        if self.y + 150 < py or self.y - 150 > pbottom or self.x + 150 < px or self.x - 150 > pright:
             return False
 
-        rect = self.get_rect()
-        if not rect:
-            return False
+        # ⚡ Bolt Optimization: Inline get_rect logic here to avoid function call
+        # and dynamic tuple allocation overhead in the high-frequency collision loop.
+        if self.image_type == "barrel":
+            if self.is_exploding or (self.explosion and not self.explosion.is_finished):
+                bx = int(self.x) + self.explosion_offset_x
+                by = int(self.y) + self.explosion_offset_y
+                bw = self.explosion_size
+                bh = self.explosion_size
+            else:
+                bx = int(self.x) + self.hitbox_reduction
+                by = int(self.y) + self.hitbox_reduction
+                bw = self.reduced_width
+                bh = self.reduced_height
+        else:
+            bx = int(self.x)
+            by = int(self.y)
+            bw = self.width
+            bh = self.height
 
-        bx, by, bw, bh = rect
         # Check normal collision if not exploding, or if explosion animation is playing
         if (self.explosion and not self.explosion.is_finished) or not self.is_exploding:
-            return not (px >= bx + bw or px + pw <= bx or py >= by + bh or py + ph <= by)
+            return not (px >= bx + bw or pright <= bx or py >= by + bh or pbottom <= by)
         return False
