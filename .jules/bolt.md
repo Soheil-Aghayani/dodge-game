@@ -101,3 +101,6 @@
 ## 2026-06-30 - [Replace random.randint with random.random in high-frequency loops]
 **Learning:** In high-frequency game logic (like spawning particles or drawing glitch effects with dozens of iterations per frame), calling `random.randint(a, b)` is noticeably slower than using `random.random()` with simple integer arithmetic (`int(random.random() * (b - a + 1)) + a`). Benchmarks show ~3x performance improvement.
 **Action:** Replace `random.randint()` with optimized `random.random()` math in high-frequency render or update loops (like glitch drawing).
+## 2026-07-28 - [Pre-calculate broad-phase limits before collision loops]
+**Learning:** In multi-entity collision loops (like verifying thousands of objects against the player per second), calculating the reference entity's exact boundary limits (like `right = x + w`, `bottom = y + h`) and broad-phase boundary limits (like `x_min = x - 150`, `x_max = x + w + 150`) continuously during each object's collision check creates redundant arithmetic overhead.
+**Action:** Extract these calculations and perform them once before the loop begins, and pass them down as a pre-calculated limit tuple to the collision method for faster access during broad-phase checking.

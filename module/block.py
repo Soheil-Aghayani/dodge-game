@@ -270,15 +270,15 @@ class Block:
             painter.setBrush(Block.fallback_color)
             painter.drawRect(QRect(*self.get_rect()))
             
-    def check_collision(self, player_rect):
-        # player_rect is now a tuple (x, y, w, h)
-        px, py, pw, ph = player_rect
+    def check_collision(self, player_limits):
+        # player_limits contains pre-calculated broad-phase and exact boundary limits
+        py_min, py_max, px_min, px_max, px, px_w, py, py_h = player_limits
 
-        # ⚡ Bolt Optimization: Fast 2D broad-phase check.
+        # ⚡ Bolt Optimization: Fast 2D broad-phase check using pre-calculated limits.
         # If the block (even accounting for max explosion size ~150px) is completely
         # above, below, to the left, or to the right of the player, return early
         # without computing the exact rect or doing the more complex intersection math.
-        if self.y + 150 < py or self.y - 150 > py + ph or self.x + 150 < px or self.x - 150 > px + pw:
+        if self.y < py_min or self.y > py_max or self.x < px_min or self.x > px_max:
             return False
 
         rect = self.get_rect()
@@ -288,5 +288,5 @@ class Block:
         bx, by, bw, bh = rect
         # Check normal collision if not exploding, or if explosion animation is playing
         if (self.explosion and not self.explosion.is_finished) or not self.is_exploding:
-            return not (px >= bx + bw or px + pw <= bx or py >= by + bh or py + ph <= by)
+            return not (px >= bx + bw or px_w <= bx or py >= by + bh or py_h <= by)
         return False

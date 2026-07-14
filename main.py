@@ -265,6 +265,16 @@ class GameWidget(QWidget):
             
         # Update blocks
         player_rect = self.player.get_rect()
+        # ⚡ BOLT OPTIMIZATION: Pre-calculate the player's boundary coordinates and broad-phase limits before the multi-entity collision loop
+        # to prevent redundant arithmetic calculations during each target object's broad-phase check.
+        px, py, pw, ph = player_rect
+        player_limits = (
+            py - 150, py + ph + 150,  # broad-phase py_min, py_max
+            px - 150, px + pw + 150,  # broad-phase px_min, px_max
+            px, px + pw,              # exact px, px_w
+            py, py + ph               # exact py, py_h
+        )
+
         # Pre-calculate loop invariants to avoid repeated C++ property lookups and evaluations
         is_random_blocks = self.abnormal_manager.is_active() and self.abnormal_manager.get_type() == 'random_blocks'
 
@@ -274,7 +284,7 @@ class GameWidget(QWidget):
             if block.update(is_random_blocks, game_width, floor_y, current_time):  # Block reached bottom
                 self.blocks.pop(i)
                 self.score += 1
-            elif block.check_collision(player_rect):
+            elif block.check_collision(player_limits):
                 if self.health_system.take_damage():  # Only process collision if damage was dealt
                     self.sound_manager.play_collision()
                     if self.health_system.is_game_over():
