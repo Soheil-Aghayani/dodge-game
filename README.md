@@ -33,7 +33,7 @@
     <tr>
       <td width="100%" align="center">
         <br/>
-        <img src="./Dodge.jpg" alt="Dodge Game Artwork" width="450"/>
+        <img src="./Dodge.png" alt="Dodge Game Artwork" width="450"/>
         <br/><br/>
         <p><i>Take control of your hooded hero and navigate a treacherous cavern. Dodge falling crates, spiked blades, and dungeon hazards as the pace relentlessly accelerates!</i></p>
       </td>
