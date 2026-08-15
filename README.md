@@ -1,83 +1,58 @@
 <div align="center">
+  <img src="docs/readme-hero.svg" alt="Ashfall Embers Trial visual hero" width="100%">
 
-# <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:gamepad-linear.svg?color=%2300F2FE"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:gamepad-linear.svg?color=%230969DA"><img alt="Gamepad" src="https://api.iconify.design/solar:gamepad-linear.svg?color=%230969DA" width="36" height="36"></picture> DODGE GAME
-### **A Fast-Paced, Pixel-Art Dungeon Survival & Dodge Experience**
-
-[![Engine/Tech](https://img.shields.io/badge/Tech_Stack-Python_%7C_C%23-0969DA?style=for-the-badge&logo=codeigniter&logoColor=white)](#)
-[![Platform](https://img.shields.io/badge/Platform-Windows_%7C_Linux_%7C_macOS-1A7F37?style=for-the-badge&logo=windows&logoColor=white)](#)
-[![License](https://img.shields.io/badge/License-MIT-0088CC?style=for-the-badge&logo=open-source-initiative&logoColor=white)](#)
-[![Status](https://img.shields.io/badge/Status-Active_Development-D14836?style=for-the-badge&logo=git&logoColor=white)](#)
-
-<br/>
-
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=00F2FE&center=true&vCenter=true&width=750&lines=Survive+the+Abyss:+Dodge+Falling+Dungeon+Hazards;Dynamic+Difficulty+Scaling+%26+Smooth+60+FPS+Physics;Custom-Built+Collision+Detection+%26+Score+Tracking;Clean+Object-Oriented+Architecture">
-    <source media="(prefers-color-scheme: light)" srcset="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=0969DA&center=true&vCenter=true&width=750&lines=Survive+the+Abyss:+Dodge+Falling+Dungeon+Hazards;Dynamic+Difficulty+Scaling+%26+Smooth+60+FPS+Physics;Custom-Built+Collision+Detection+%26+Score+Tracking;Clean+Object-Oriented+Architecture">
-    <img alt="Typing SVG" src="https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=20&pause=1000&color=0969DA&center=true&vCenter=true&width=750&lines=Survive+the+Abyss:+Dodge+Falling+Dungeon+Hazards;Dynamic+Difficulty+Scaling+%26+Smooth+60+FPS+Physics;Custom-Built+Collision+Detection+%26+Score+Tracking;Clean+Object-Oriented+Architecture">
-  </picture>
-</p>
-
-<p align="center">
-  <b>An agile, custom-engineered pixel-art survival game built with clean object-oriented design, responsive physics, and escalating difficulty. How long can you survive the falling debris?</b>
-</p>
-
+  <h1>ASHFALL EMBERS TRIAL</h1>
+  <p><strong>A PyQt5 survival arcade game about movement, pressure, and falling hazards.</strong></p>
+  <p>
+    <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python">
+    <img src="https://img.shields.io/badge/PyQt5-desktop-41CD52?style=for-the-badge&logo=qt&logoColor=white" alt="PyQt5">
+    <img src="https://img.shields.io/badge/status-experimental-E5A24B?style=for-the-badge&labelColor=0B2F36" alt="Experimental project">
+  </p>
 </div>
 
 ---
 
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:play-stream-linear.svg?color=%2300F2FE"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:play-stream-linear.svg?color=%230969DA"><img alt="Play Icon" src="https://api.iconify.design/solar:play-stream-linear.svg?color=%230969DA" width="28" height="28"></picture> GAMEPLAY PREVIEW & OVERVIEW
+## The idea
+
+Ashfall Embers Trial is a compact desktop arcade experiment. You move through a hostile arena, survive falling blocks, react to abnormal events, and chase a higher score every run.
+
+The project is deliberately tactile: cached rendering, sprite animation, sound effects, pause states, health, hazards, and a game-over loop all live inside a small PyQt5 application.
+
+## The experience
+
+- Main menu, gameplay, pause, settings, and restart flows
+- Keyboard movement with responsive timing
+- Falling blocks, collision detection, health, and high-score persistence
+- Abnormal events such as reversed controls, a reversed floor, and random blocks
+- Animated player states, particles, sound effects, and a custom game-over screen
+- A modular module/ package so gameplay systems can evolve independently
+
+## Run locally
+
+~~~bash
+python -m venv .venv
+.venv\Scripts\activate
+pip install PyQt5
+python main.py
+~~~
+
+Use the arrow keys to move. Survive as long as possible, then press R to restart after a run.
+
+## Project map
+
+| Area | Responsibility |
+| --- | --- |
+| main.py | Application window and game loop |
+| module/player.py | Player state, movement, and animation |
+| module/block.py | Falling hazards and collision geometry |
+| module/health_system.py | Damage, health, and game-over state |
+| module/abnormal.py | Random rule changes and challenge events |
+| module/asset/ | Sprites, sounds, fonts, and backgrounds |
+
+## Why it is here
+
+This is one of the account's playful engineering projects: a place to explore realtime rendering, stateful UI, performance-minded updates, and the small details that make a game feel alive.
 
 <div align="center">
-  <table>
-    <tr>
-      <td width="100%" align="center">
-        <br/>
-        <img src="./Dodge.png" alt="Dodge Game Artwork" width="450"/>
-        <br/><br/>
-        <p><i>Take control of your hooded hero and navigate a treacherous cavern. Dodge falling crates, spiked blades, and dungeon hazards as the pace relentlessly accelerates!</i></p>
-      </td>
-    </tr>
-  </table>
+  <sub>Built with Python, PyQt5, sprites, sound, and a little controlled chaos.</sub>
 </div>
-
-> **Core Objective:** The premise is simple yet addicting—avoid incoming environmental hazards at all costs. As time progresses, falling velocity, spawn frequency, and trajectory unpredictability scale upward, putting your reflexes and spatial awareness to the ultimate test.
-
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:stars-linear.svg?color=%2300F2FE"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:stars-linear.svg?color=%230969DA"><img alt="Stars Icon" src="https://api.iconify.design/solar:stars-linear.svg?color=%230969DA" width="28" height="28"></picture> KEY FEATURES & ARCHITECTURE
-
-| Feature | Description | Engineering Highlights |
-| :--- | :--- | :--- |
-| **<img src="https://api.iconify.design/solar:bolt-linear.svg?color=%230969DA" width="20" height="20" align="text-bottom"> Fluid 60+ FPS Movement** | Responsive, zero-latency player controls designed for precision dodging. | Implements optimized rendering loops and frame-rate independent delta-time movement. |
-| **<img src="https://api.iconify.design/solar:chart-linear.svg?color=%231A7F37" width="20" height="20" align="text-bottom"> Dynamic Difficulty Scaling** | The game dynamically ramps up hazard speed and spawn density over time. | Algorithmic progression system that continuously tests player reflexes without feeling unfair. |
-| **<img src="https://api.iconify.design/solar:shield-check-linear.svg?color=%23D97706" width="20" height="20" align="text-bottom"> Precision Collision Engine** | Highly accurate hitbox evaluation ensuring fair gameplay and instant death triggers. | Custom bounding-box / bounding-circle collision mathematics optimized for low CPU overhead. |
-| **<img src="https://api.iconify.design/solar:cup-star-linear.svg?color=%236E40C9" width="20" height="20" align="text-bottom"> Score & State Tracking** | Persistent score tracking, high-score saving, and seamless game-state transitions. | Clean separation of concerns between menus, active gameplay, and game-over states. |
-
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:keyboard-linear.svg?color=%2300F2FE"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:keyboard-linear.svg?color=%230969DA"><img alt="Keyboard Icon" src="https://api.iconify.design/solar:keyboard-linear.svg?color=%230969DA" width="28" height="28"></picture> CONTROLS & KEYBINDINGS
-
-<div align="center">
-
-| Action / Command | Primary Keybinding | Alternate Keybinding |
-| :---: | :---: | :---: |
-| **Move Up** | `<W>` | `▲ Up Arrow` |
-| **Move Down** | `<S>` | `▼ Down Arrow` |
-| **Move Left** | `<A>` | `◄ Left Arrow` |
-| **Move Right** | `<D>` | `► Right Arrow` |
-| **Pause / Resume** | `<ESC>` | `<P>` |
-| **Restart Game** | `<R>` | `<Spacebar>` *(on Game Over)* |
-
-</div>
-
----
-
-## <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:rocket-linear.svg?color=%2300F2FE"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:rocket-linear.svg?color=%230969DA"><img alt="Rocket Icon" src="https://api.iconify.design/solar:rocket-linear.svg?color=%230969DA" width="28" height="28"></picture> GETTING STARTED & INSTALLATION
-
-Follow these instructions to clone the repository, install dependencies, and run the game locally on your machine.
-
-### 1️⃣ Clone the Repository
-```bash
-git clone [https://github.com/Soheil-Aghayani/dodge-game.git](https://github.com/Soheil-Aghayani/dodge-game.git)
-cd dodge-game
