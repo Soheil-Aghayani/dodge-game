@@ -1,4 +1,6 @@
 <div align="center">
+  <img src="docs/readme-hero.svg" alt="Ashfall Embers Trial visual hero" width="100%">
+
   <h1>ASHFALL EMBERS TRIAL</h1>
   <p><strong>A PyQt5 survival arcade game about movement, pressure, and falling hazards.</strong></p>
   <p>
